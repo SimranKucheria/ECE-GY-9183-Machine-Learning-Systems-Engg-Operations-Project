@@ -1,5 +1,5 @@
 
-## Title of project
+## AI Detection + Auto-Captioning for Transparency in Image Platforms
 
 <!-- 
 Discuss: Value proposition: Your will propose a machine learning system that can be 
@@ -10,6 +10,13 @@ status quo used in the business or service? What business metric are you going t
 judged on? (Note that the “service” does not have to be for general users; you can 
 propose a system for a science problem, for example.)
 -->
+Proposing a system that can be used in existing image-sharing platforms (Pinterest, Instagram) to increase transparency by using an ML model to detect AI-generated images and enabling auto-captioning to tag images appropriately
+
+**Value Proposition:** The platforms will be able to moderate content better/prevent misinformation using the tags provided by the model. Additionally the automatic tagging mechanism can also be used in content indexing.
+
+**Status Quo:** Users are consuming content with no way of knowing if the content is AI-generated or not. Content is being uploaded with manual captions that may/may not help with information retrieval/censorship.
+
+**Business Metric:** Preventing misinformation by informing users. Faster content retrieval.
 
 ### Contributors
 
@@ -21,11 +28,11 @@ link to their contributions in all repos here. -->
 
 | Name                            | Responsible for | Link to their commits in this repo |
 |---------------------------------|-----------------|------------------------------------|
-| All team members                |                 |                                    |
-| Team member 1                   |                 |                                    |
-| Team member 2                   |                 |                                    |
-| Team member 3                   |                 |                                    |
-| Team member 4 (if there is one) |                 |                                    |
+| All team members | | |
+| Ansh Sarkar | Model Training (Unit 4&5)  |  |
+| Manali Tanna | Model Serving & Monitoring (Unit 6&7) | |
+| Princy Doshi | Data Pipeline (Unit 8) | |
+| Simran Kucheria |  Continuous Pipeline (Unit 3) ||
 
 
 
