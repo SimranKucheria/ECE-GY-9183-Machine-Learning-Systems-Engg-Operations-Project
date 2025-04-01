@@ -76,8 +76,8 @@ The table below shows an example, it is not a recommendation. -->
 diagram, (3) justification for your strategy, (4) relate back to lecture material, 
 (5) include specific numbers. -->
 
-#ADD IMAGE HERE
-#LINK TO IMAGE IN DIFFERENT SECTIONS
+<!-- Insert image here -->
+![System Diagram](images/System%20Diagram.png)
 
 
 #### Model training and training platforms
