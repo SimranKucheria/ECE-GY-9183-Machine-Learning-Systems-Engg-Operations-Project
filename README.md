@@ -85,15 +85,29 @@ diagram, (3) justification for your strategy, (4) relate back to lecture materia
 <!-- Make sure to clarify how you will satisfy the Unit 4 and Unit 5 requirements, 
 and which optional "difficulty" points you are attempting. -->
 ##### Objectives
-- Train and re-train: The LLM and Resnet Models will be trained/fine-runed and retrained on the datasets outlined above.
-- Modeling: The Resnet model will involve modelling choices with respect to hyperparamters.
-- Experiment tracking: We plan to run multiple training jobs for the RESNET model with different hyperparameters. All these jobs will be tracked on MLFlow. The LLM model will also have fine-tuning jobs associated with it.
+- Train and re-train: The system will use the AI vs Human Images dataset and train a ResNet model to classify whether the image is AI generated or not. Parallely we will use an LLM and finetune it on the COCO dataset such that it generates description for the image, generate tags for it and also provide a decision on whether or not it should be content moderated. The Resnet model will be retrained after the feedback loop closes and new data (image + label) is ingested.
+- Modeling: The Resnet model will involve modelling choices with respect to hyperparamters. For image description generation we choose to go ahead with an LLM because of the way these models generalize well on text generation and we can prompt engineer it to perform well for content moderation. (TODO: @ansh Add reason why ResNet)
+- Experiment tracking: We plan to run multiple training jobs for the ResNet model with different hyperparameters. All these jobs will be tracked on MLFlow. The LLM model will also have fine-tuning jobs associated with it. Some of the experiments we plan to run are: 
+
+    1. LLM
+
+        1. Finetuning on COCO dataset
+        2. Prompt Engineering
+        3. Hyperparameter tuning
+
+    2. ResNet
+
+        1. Architecture
+        2. Learning Rate
+        3. Dropout
+        4. Cosine annealing
+
 - Scheduling training jobs: All the jobs required for training/re-training will be submitted via a ray cluster.
 
 ##### Extra Difficulty
-- Training strategies for large models: The LLM/Resnet models are large enough to not fit on a low end GPU. Hence some strategies like LORA/Q-LORA will be used to train and these experiments will be tracked to come up with the most optimum model.
-- Use distributed training to increase velocity: We will also experiment with FSDP/DDP techniques whilst running experiments on our model.
-- Using Ray Train: We will use Ray-Train to make sure our training jobs getn checkpointed and we dont lose progress.
+- Training strategies for large models: The LLM/Resnet models are too large to fit on a low end GPU. Hence some strategies like PEFT, gradient accumulation and mixed precision will be used whilst training. These experiments will be tracked using MLFLow to come up with the most optimum model.
+- Use distributed training to increase velocity: We will experiment with FSDP/DDP techniques whilst running experiments on our model.
+- Using Ray Train: We will use Ray-Train to ensure frequent checkpointing and guarantee fault tolerance whilst training.
 
 
 #### Model serving and monitoring platforms
@@ -101,18 +115,26 @@ and which optional "difficulty" points you are attempting. -->
 <!-- Make sure to clarify how you will satisfy the Unit 6 and Unit 7 requirements, 
 and which optional "difficulty" points you are attempting. -->
 ##### Objectives
-- Serving from an API endpoint: The system will be exposed to users through API endpoints, currently considering a  basic SwaggerUI based backend. Specifis API's can be found in the detailed design.
-- Identify requirements: [Based on platform come up with concurrency/latency requirements, also talk about model size if we plan to have edge devices host the model?]
-- Model optimizations to satisfy requirements: Experiment with different model optimisations for both the proposed models and track the runs appropriately.
-- System optimizations to satisfy requirements: Experiment with different system optimisations for both the proposed models and track the runs appropriately.
-- Offline evaluation of model: 
+
+- Serving from an API endpoint: The system will be exposed to users through REST API endpoints. We will use a basic SwaggerUI based backend. Since this system is intended for internal use we are not proposing a frontend.
+- Identify requirements: [Based on platform come up with concurrency/latency requirements, also talk about model size if we plan to have edge devices host the model?] (TODO @all)
+- Model optimizations to satisfy requirements: Since our system has real time low latency requirements and expects a large volume of concurrent users, we will experiment with different model-level optimisations like graph optimization, quantization and reduced precision using ONNX backend to keep our inference time as low as possible.
+- System optimizations to satisfy requirements: To further reduce our prediction latency we will experiment with various system level optimizations for model serving, including concurrency and batching, in Triton Inference Server.
+
+- Offline evaluation of model: Our system will run an automated offline evaluation plan after model training with results logged to MLFlow. The offline evaluation will include: 
+(A) evaluation on appropriate domain specific metrics for each model. For AI VS Human Image detection using a ResNet we will use F1 score, Precision, Accuracy and Confusion Matrix. For Image description, content moderation and tagging using an LLM we will use BLEU scores.
+(B) evaluation on populations and slices of special relevance, including an analysis of fairness and bias if relevant (TODO @all if we do content moderation we have to add something here) 
+(C) test on known failure modes 
+(D) and, unit tests based on templates. Depending on the test results, you will automatically register an updated model in the model registry, or not.
 - Load test in staging: 
 - Online evaluation in canary: 
 - Close the loop: 
 - Business-specific evaluation: 
+
 ##### Extra Difficulty
-- Develop multiple options for serving: Come up with various model serving options for the RESNet model.
-- Monitor for data drift: Monitor data pipeline for data drifts and display on dashboard
+- Develop multiple options for serving: The ResNet model benefits from using GPU for inference and we plan to develop and evaluate optimized server-grade GPU. We will compare them with respect to performance and cost.
+- Monitor for data drift: Given that our model will work with images, we will also monitor for data drift for unexpected and undocumented changes to the data structure and semantics.
+- Monitor for model degradation: We will monitor for model degradation in the model output by closing the feedback loop. We will trigger automatic model re-training with the new image and it's provided label.
 
 #### Data pipeline
 <!-- Make sure to clarify how you will satisfy the Unit 8 requirements,  and which 
