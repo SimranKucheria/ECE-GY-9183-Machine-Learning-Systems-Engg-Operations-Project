@@ -26,13 +26,13 @@ Then, each row after that is: name of contributor, their role, and in the third 
 you will link to their contributions. If your project involves multiple repos, you will 
 link to their contributions in all repos here. -->
 
-| Name                            | Responsible for | Link to their commits in this repo |
-|---------------------------------|-----------------|------------------------------------|
-| All team members | | |
-| Ansh Sarkar | Model Training (Unit 4&5)  |  |
-| Manali Tanna | Model Serving & Monitoring (Unit 6&7) | |
-| Princy Doshi | Data Pipeline (Unit 8) | |
-| Simran Kucheria |  Continuous Pipeline (Unit 3) ||
+| Name             | Responsible for                       | Link to their commits in this repo |
+| ---------------- | ------------------------------------- | ---------------------------------- |
+| All team members |                                       |                                    |
+| Ansh Sarkar      | Model Training (Unit 4&5)             |                                    |
+| Manali Tanna     | Model Serving & Monitoring (Unit 6&7) |                                    |
+| Princy Doshi     | Data Pipeline (Unit 8)                |                                    |
+| Simran Kucheria  | Continuous Pipeline (Unit 3)          |                                    |
 
 
 
@@ -48,13 +48,13 @@ all the data. -->
 Name of data/model, conditions under which it was created (ideally with links/references), 
 conditions under which it may be used. -->
 
-|              | How it was created | Conditions of use |
-|--------------|--------------------|-------------------|
-| AI vs. Human-Generated Images|  Images sampled from the Shutterstock platform across various categories, including a balanced selection where one-third of the images feature humans. These authentic images are paired with their equivalents generated using state-of-the-art generative models. |Licensed under Apache 2.0 - a permissive open-source license that allows users to modify, distribute, and sublicense the original code, but requires including the original copyright notice, a copy of the license, and any significant changes made to the code.                   |
-| MS COCO Dataset  |   The MS COCO (Microsoft Common Objects in Context) dataset is a large-scale object detection, segmentation, key-point detection, and captioning dataset. The dataset consists of 328K images. |  Licensed under Creative Commons Attribution 4.0 License, lets you distribute, remix, tweak, and build upon your work, even commercially, as long as you credit the original creator.|
-|Resnet50 |ResNet50 is a convolutional neural network (CNN) with 50 layers, part of the ResNet family introduced by Microsoft Research in 2015. It uses "residual learning" via skip connections to solve vanishing gradient problems in deep networks. It is pre-trained on the ImageNet-1k dataset (1.2M images, 1,000 classes).|It is  open-source under the MIT License. It is free for research and commercial use. Requires attribution if used directly. The pretrained weights may have dataset-specific biases.|
-|ViT (Vision Transformer)| Introduced by Google in 2020, ViT applies the transformer architecture (originally for NLP) to images by splitting images into patches. It is pretrained on large datasets like ImageNet-21k (14M images) or JFT-300M (proprietary dataset).|The Original ViT code/weights is under Apache 2.0 License (commercial-friendly). Third-party implementations (e.g., Hugging Face) may have specific terms. Pretrained models may inherit biases from training data. Proprietary datasets (e.g., JFT-300M) are not publicly available.|
-|Qwen/Qwen2-VL-7B| A 7-billion-parameter multimodal vision-language model from Alibaba’s Qwen series. Combines vision and language transformers for tasks like visual QA and instruction following.|Governed by Tongyi Qianwen License (check Hugging Face for specifics). Non-commercial/research use only unless explicitly permitted. Prohibited for military, surveillance, or unethical applications. Users must comply with local laws (e.g., China’s AI regulations).|
+|                               | How it was created                                                                                                                                                                                                                                                                                                                           | Conditions of use                                                                                                                                                                                                                                                                                                                                                           |
+| ----------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| AI vs. Human-Generated Images | Images sampled from the Shutterstock platform across various categories, including a balanced selection where one-third of the images feature humans. These authentic images are paired with their equivalents generated using state-of-the-art generative models.                                                                           | Licensed under Apache 2.0 - a permissive open-source license that allows users to modify, distribute, and sublicense the original code, but requires including the original copyright notice, a copy of the license, and any significant changes made to the code.                                                                                                          |
+| MS COCO Dataset               | The MS COCO (Microsoft Common Objects in Context) dataset is a large-scale object detection, segmentation, key-point detection, and captioning dataset. The dataset consists of 328K images.                                                                                                                                                 | Licensed under Creative Commons Attribution 4.0 License, lets you distribute, remix, tweak, and build upon your work, even commercially, as long as you credit the original creator.                                                                                                                                                                                        |
+| RegNet                        | RegNet (Regularized Network) is a family of CNNs by Facebook AI, designed for efficient and scalable deep learning. It optimizes network design systematically, using adjustable parameters like depth and width. RegNet balances accuracy and computational cost, making it ideal for tasks like image classification and object detection. | The RegNet model trained on ImageNet-1K, introduced in the paper "Designing Network Design Spaces," is available on Hugging Face under the Apache 2.0 License. This permissive license allows for both personal and commercial use, distribution, and modification, provided that proper attribution is given and a copy of the license is included with any distributions. |
+| ViT (Vision Transformer)      | Introduced by Google in 2020, ViT applies the transformer architecture (originally for NLP) to images by splitting images into patches.It is pretrained on large datasets like ImageNet-21k (14M images) or JFT-300M (proprietary dataset).                                                                                                  | The Original ViT code/weights is under Apache 2.0 License (commercial-friendly). Third-party implementations (e.g., Hugging Face) may have specific terms. Pretrained models may inherit biases from training data. Proprietary datasets (e.g., JFT-300M) are not publicly available.                                                                                       |
+| Qwen/Qwen2-VL-7B              | A 7-billion-parameter multimodal vision-language model from Alibaba’s Qwen series. Combines vision and language transformers for tasks like visual QA and instruction following.                                                                                                                                                             | Governed by Tongyi Qianwen License (check Hugging Face for specifics). Non-commercial/research use only unless explicitly permitted. Prohibited for military, surveillance, or unethical applications. Users must comply with local laws (e.g., China’s AI regulations).                                                                                                    |
 
 
 ### Summary of infrastructure requirements
@@ -64,10 +64,10 @@ how much/when, justification. Include compute, floating IPs, and persistent stor
 The table below shows an example, it is not a recommendation. -->
 
 | Requirement     | How many/when                                     | Justification |
-|-----------------|---------------------------------------------------|---------------|
+| --------------- | ------------------------------------------------- | ------------- |
 | `m1.medium` VMs | 3 for entire project duration                     | ...           |
 | `gpu_mi100`     | 4 hour block twice a week                         |               |
-| Floating IPs    | 1 for entire project duration, 1 for sporadic use |               |
+| Floating IPs    | 1 for entire project duration, 2 for sporadic use |               |
 | etc             |                                                   |               |
 
 ### Detailed design plan
@@ -85,29 +85,21 @@ diagram, (3) justification for your strategy, (4) relate back to lecture materia
 <!-- Make sure to clarify how you will satisfy the Unit 4 and Unit 5 requirements, 
 and which optional "difficulty" points you are attempting. -->
 ##### Objectives
-Train and retrain: The system will use the AI vs. Human Images dataset and train a ResNet model to classify whether the image is AI-generated or not. Parallely, we will use an LLM and fine-tune it on the COCO dataset such that it generates a description for the image, tags for it, and also provides a decision on whether or not it should be content moderated. The Resnet model will be retrained after the feedback loop closes and new data (image + label) is ingested.
-- Modeling: The Resnet model will involve modelling choices concerning hyperparameters. For image description generation, we choose to go ahead with an LLM because of the way these models generalize well on text generation, and we can prompt engineer it to perform well for content moderation. (TODO: @ansh Add reason why ResNet)
-- Experiment tracking: We plan to run multiple training jobs for the ResNet model with different hyperparameters. All these jobs will be tracked on MLFlow. The LLM model will also have fine-tuning jobs associated with it. Some of the experiments we plan to run are: 
-
-    1. LLM
-
-        1. Finetuning on the COCO dataset
-        2. Prompt Engineering
-        3. Hyperparameter tuning
-
-    2. ResNet
-
-        1. Architecture
-        2. Learning Rate
-        3. Dropout
-        4. Cosine annealing
-
+- Train and re-train: The system will use the AI vs Human Images dataset and train a RegNet model to classify whether the image is AI generated or not. Parallely we will use an LLM and finetune it on the COCO dataset such that it generates description for the image, generate tags for it and also provide a decision on whether or not it should be content moderated. For the re-train pipeline both the models can have periodic retraining jobs scheduled after a certain amount of data has been annotated. 
+  
+- Modeling: We have two tasks to solve. First one being an image classification problem we are going ahead with either a RegNet model or a ViT model as these models are known to perform well in image classification tasks and we can use their pretrained weights to finetune for our use case. For image captioning as the second task we have decided to go ahead with a multimodel LLM model (Qwen/Qwen2-VL-7B) as it is pretrained on a large dataset and can be finetuned for image captioning. The pretrained knowledge of the model will help us in generating more meaningful captions and tags.
+  
+- Experiment tracking: Both the model will be tracked using MLFlow to track model experiments, hyperparameters and metrics. This will help us in logging the model performance and also help us in comparing the models. We will also use MLFlow to track the training jobs and their artifacts.
+  
 - Scheduling training jobs: All the jobs required for training/re-training will be submitted via a ray cluster.
 
 ##### Extra Difficulty
-- Training strategies for large models: The LLM/Resnet models are too large to fit on a low-end GPU. Hence, some strategies like PEFT, gradient accumulation and mixed precision will be used whilst training. These experiments will be tracked using MLFlow to come up with the most optimal model.
+- Training strategies for large models: The LLM/Resnet models are too large to fit on a low end GPU. Hence some strategies like PEFT, gradient accumulation and mixed precision will be used whilst training. These experiments will be tracked using MLFLow to come up with the most optimum model.
 - Use distributed training to increase velocity: We will experiment with FSDP/DDP techniques whilst running experiments on our model.
+  
 - Using Ray Train: We will use Ray-Train to ensure frequent checkpointing and guarantee fault tolerance whilst training.
+
+- Scheduling hyperparameter tuning jobs: We will use Ray Tune to schedule hyperparameter tuning jobs for the RegNet model for classification task. 
 
 
 #### Model serving and monitoring platforms
