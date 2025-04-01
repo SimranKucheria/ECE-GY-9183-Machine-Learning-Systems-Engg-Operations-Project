@@ -66,7 +66,7 @@ The table below shows an example, it is not a recommendation. -->
 | Requirement     | How many/when                                     | Justification |
 | --------------- | ------------------------------------------------- | ------------- |
 | `m1.medium` VMs | 3 for entire project duration                     | ...           |
-| `gpu_mi100`     | 4 hour block twice a week                         |               |
+| `gpu_mi100`     | 4 hour block thrice a week                         |               |
 | Floating IPs    | 1 for entire project duration, 2 for sporadic use |               |
 | etc             |                                                   |               |
 
@@ -85,7 +85,7 @@ diagram, (3) justification for your strategy, (4) relate back to lecture materia
 <!-- Make sure to clarify how you will satisfy the Unit 4 and Unit 5 requirements, 
 and which optional "difficulty" points you are attempting. -->
 ##### Objectives
-- Train and re-train: The system will use the AI vs Human Images dataset and train a RegNet model to classify whether the image is AI generated or not. Parallely we will use an LLM and finetune it on the COCO dataset such that it generates description for the image, generate tags for it and also provide a decision on whether or not it should be content moderated. For the re-train pipeline both the models can have periodic retraining jobs scheduled after a certain amount of data has been annotated. 
+- Train and re-train: The system will use the AI vs Human Images dataset and train a RegNet model to classify whether the image is AI generated or not. Parallely we will use an LLM and finetune it on the COCO dataset such that it generates description for the image, generate tags for it which can be used further for indexing. For the re-train pipeline both the models can have periodic retraining jobs scheduled after a certain amount of data has been annotated. 
   
 - Modeling: We have two tasks to solve. First one being an image classification problem we are going ahead with either a RegNet model or a ViT model as these models are known to perform well in image classification tasks and we can use their pretrained weights to finetune for our use case. For image captioning as the second task we have decided to go ahead with a multimodel LLM model (Qwen/Qwen2-VL-7B) as it is pretrained on a large dataset and can be finetuned for image captioning. The pretrained knowledge of the model will help us in generating more meaningful captions and tags.
   
@@ -108,12 +108,15 @@ and which optional "difficulty" points you are attempting. -->
 and which optional "difficulty" points you are attempting. -->
 ##### Objectives
 
-- Serving from an API endpoint: The system will be exposed to users through REST API endpoints. We will use a basic SwaggerUI-based backend. Since this system is intended for internal use we are not proposing a frontend.
+- Serving from an API endpoint: The system will be exposed to users through REST API endpoints. We will use a basic SwaggerUI-based backend. The image tags and description will be sent back as a response to different internal stakeholders who can then use the tags for content moderation and indexing. 
+  
 - Identify requirements: [Based on platform, come up with concurrency/latency requirements, also talk about model size if we plan to have edge devices host the model?] (TODO @all)
-- Model optimizations to satisfy requirements: Since our system has real-time low-latency requirements and expects a large volume of concurrent users, we will experiment with different model-level optimizations like graph optimization, quantization, and reduced precision using the ONNX backend to keep our inference time as low as possible.
-- System optimizations to satisfy requirements: To further reduce our prediction latency, we will experiment with various system-level optimizations for model serving, including concurrency and batching, in Triton Inference Server.
+  
+- Model optimizations to satisfy requirements: Since our system has real-time low-latency requirements and expects a large volume of concurrent users, we will experiment with different model-level optimizations like quantization, and reduced precision using the ONNX backend to keep our inference time as low as possible for our RegNet model. For the LLM we will use either Huggingface Accelerate or vLLM that takes advantage of PagedAttention, continuous batching, and tensor parallelism to reduce the latency of the model. We can also quantize the LLM to reduce the size of the model and improve the inference time.
+  
+- System optimizations to satisfy requirements: To further reduce our prediction latency, we will experiment with various system-level optimizations for model serving, including concurrency and batching. We will use different execution providers like Triton, TensorRT, ONNX for our RegNet model.
 
-- Offline evaluation of model: Our system will run an automated offline evaluation plan after model training, with results logged to MLFlow. The offline evaluation will include: 
+<!-- - Offline evaluation of model: Our system will run an automated offline evaluation plan after model training, with results logged to MLFlow. The offline evaluation will include: 
 (A) evaluation on appropriate domain specific metrics for each model. For AI VS Human Image detection using a ResNet we will use F1 score, Precision, Accuracy and Confusion Matrix. For Image description, content moderation and tagging using an LLM we will use BLEU scores.
 (B) evaluation on populations and slices of special relevance, including an analysis of fairness and bias if relevant (TODO @all if we do content moderation, we have to add something here) 
 (C) test on known failure modes 
@@ -121,11 +124,13 @@ and which optional "difficulty" points you are attempting. -->
 - Load test in staging: 
 - Online evaluation in Canary: 
 - Close the loop: 
-- Business-specific evaluation: 
+- Business-specific evaluation:  -->
 
 ##### Extra Difficulty
-- Develop multiple options for serving: The ResNet model benefits from using GPU for inference and we plan to develop and evaluate an optimized server-grade GPU. We will compare them to performance and cost.
-- Monitor for data drift: Given that our model will work with images, we will also monitor for data drift for unexpected and undocumented changes to the data structure and semantics.
+- Develop multiple options for serving: The RegNet model benefits from using GPU for inference and we plan to develop and evaluate an optimized server-grade GPU. OpenVINO execution provider should also be beneficial for our system. We will experiment with all the execution providers and compare the performance of our system.
+  
+- Monitor for data drift: Given that our model will work with images, we will also monitor for data drift for images using feature embeddings and computing KL divergence on it.
+  
 - Monitor for model degradation: We will monitor for model degradation in the model output by closing the feedback loop. We will trigger automatic model re-training with the new image and its provided label.
 
 #### Data pipeline
