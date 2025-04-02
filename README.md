@@ -123,7 +123,8 @@ and which optional "difficulty" points you are attempting. -->
 
 - **Serving from an API endpoint**: The system will be exposed to users through REST API endpoints. We will use a basic SwaggerUI-based backend. The image tags and description will be sent back as a response to different internal stakeholders who can then use the tags for content moderation and indexing. 
   
-- **Identify requirements**: [Based on platform, come up with concurrency/latency requirements, also talk about model size if we plan to have edge devices host the model?] (TODO @all)
+- **Identify requirements**: 
+[Based on platform, come up with concurrency/latency requirements, also talk about model size if we plan to have edge devices host the model?] (TODO @all)
   
 - **Model optimizations to satisfy requirements**: Since our system has real-time low-latency requirements and expects a large volume of concurrent users, we will experiment with different model-level optimizations like quantization, and reduced precision using the ONNX backend to keep our inference time as low as possible for our RegNet model. For the LLM we will use either Huggingface Accelerate or vLLM that takes advantage of PagedAttention, continuous batching, and tensor parallelism to reduce the latency of the model. We can also quantize the LLM to reduce the size of the model and improve the inference time.
   
@@ -137,18 +138,22 @@ and which optional "difficulty" points you are attempting. -->
 
 - **Load test in staging**: We will do a load test for each of the model separately and also for the entire system. This will help us identify if each component is working as expected and individual performance analysis can help us find any bottlenecks in our system.
    
-- **Online evaluation in Canary**: When your service is ready to deploy to a canary environment (i.e. it has passed tests in staging), you will conduct an online evaluation (like in Lab 7) with artificial “users”. (You yourself will “be” the users; you should prepare a plan as to how you will represent the range of real users and user behaviors you might encounter in a real deployment.)
+- **Online evaluation in Canary**: Simulate data patterns corresponding to different category of users - multiple posts, misinformation, model users etc. The data range of these users to represent all the different categories of data seen so far.
 
-- Close the loop: Implement a means by which you get feedback about the quality of your model’s predictions in productions; whether this is with explicit user feedback, human annotators, or natural ground truth labels. Also, during production, you will save some portion of production data, label it, and use it for re-training on updated data.
+- **Close the loop**: We plan to close the loop in various ways.
+    - User feedback on whether an AI generated image has been tagged correctly.
+    - Human Annotators with respect to tags generated for images.
 
-- Business-specific evaluation: Although you will not be able to realize this plan, because your system will not really be deployed to users as part of a production service, you should define a business-specific evaluation plan with respect to business metrics, and explain how you will measure this in production.
+- **Business-specific evaluation**: The business specific evaluation for this system can be done in the following ways
+    - A metric to evaluate the percentage of correctly tagged images with respect to AI-generated content.
+    - A metric like Click Through Rate to evaluate how quickly is useful content being returned with the use of information retrieval mechanisms.
 
 ##### Extra Difficulty
-- Develop multiple options for serving: The RegNet model benefits from using GPU for inference and we plan to develop and evaluate an optimized server-grade GPU. OpenVINO execution provider should also be beneficial for our system. We will experiment with all the execution providers and compare the performance of our system.
+- **Develop multiple options for serving**: The RegNet model benefits from using GPU for inference and we plan to develop and evaluate an optimized server-grade GPU. OpenVINO execution provider should also be beneficial for our system. We will experiment with all the execution providers and compare the performance of our system.
   
-- Monitor for data drift: Given that our model will work with images, we will also monitor for data drift for images using feature embeddings and computing KL divergence on it.
+- **Monitor for data drift**: Given that our model will work with images, we will also monitor for data drift for images using feature embeddings and computing KL divergence on it.
   
-- Monitor for model degradation: We will monitor for model degradation in the model output by closing the feedback loop. We will trigger automatic model re-training with the new image and its provided label.
+- **Monitor for model degradation**: We will monitor for model degradation in the model output by closing the feedback loop. We will trigger automatic model re-training with the new image and its provided label.
 
 #### Data pipeline
 <!-- Make sure to clarify how you will satisfy the Unit 8 requirements,  and which 
@@ -166,14 +171,15 @@ optional "difficulty" points you are attempting. -->
 <!-- Make sure to clarify how you will satisfy the Unit 3 requirements,  and which 
 optional "difficulty" points you are attempting. -->
 
-#TO BE UPDATED AFTER LAB 3 IS OUT
 
 ##### Objectives
-- Infrastructure-as-code: The hardware requirements for our project will be provisioned using YAML and terraform. The software/service setup will be configured using ArgoCD and Argo workflows. And all these configurations will live on git. 
+- Infrastructure-as-code: The hardware requirements for our project will be provisioned using YAML and terraform. The software/service setup will be configured using ArgoCD and Argo workflows. All these configurations will live on git. 
 
 - Cloud-native: We will ensure immutability in our infrastructure by using IaC and as seen in our design diagram the RegNet and LLM's will be two separate microservices having separate API endpoints. All code will be containerized and run on docker/K8.
 
 - CI/CD and continuous training: 
-You will define an automated pipeline that, in response to a trigger (which may be a manual trigger, a schedule, or an external condition, or some combination of these), will: re-train your model, run the complete offline evaluation suite, apply the post-training optimizations for serving, test its integration with the overall service, package it inside a container for the deployment environment, and deploy it to a staging area for further testing (e.g. load testing).
+A CI/CD pipeline will be defined on Gitlab with configurations for all of the other pipelines. We will also incorporate our IAC configs here. The conditions for retraining will include - Changes in the data versioning, changes in model code and a weekly training schedule. This continuos X pipeline will go through all the defined pipelines - training, serving, evaluation, data automatically.
+
+<!-- You will define an automated pipeline that, in response to a trigger (which may be a manual trigger, a schedule, or an external condition, or some combination of these), will: re-train your model, run the complete offline evaluation suite, apply the post-training optimizations for serving, test its integration with the overall service, package it inside a container for the deployment environment, and deploy it to a staging area for further testing (e.g. load testing). -->
 
 - Staged deployment: You will configure a “staging”, “canary”, and “production” environment in which your service may be deployed. You will also implement a process by which a service is promoted from the staging area to a canary environment, for online evaluation, and a process by which a service is promoted from canary to production.
