@@ -116,15 +116,15 @@ and which optional "difficulty" points you are attempting. -->
   
 - System optimizations to satisfy requirements: To further reduce our prediction latency, we will experiment with various system-level optimizations for model serving, including concurrency and batching. We will use different execution providers like Triton, TensorRT, ONNX for our RegNet model.
 
-<!-- - Offline evaluation of model: Our system will run an automated offline evaluation plan after model training, with results logged to MLFlow. The offline evaluation will include: 
-(A) evaluation on appropriate domain specific metrics for each model. For AI VS Human Image detection using a ResNet we will use F1 score, Precision, Accuracy and Confusion Matrix. For Image description, content moderation and tagging using an LLM we will use BLEU scores.
+- Offline evaluation of model: Our system will run an automated offline evaluation plan after model training, with results logged to MLFlow. The offline evaluation will include: 
+(A) evaluation on appropriate domain specific metrics for each model. For AI VS Human Image detection using a RegNet we will use F1 score, Precision, Accuracy and Confusion Matrix. For Image description and tagging using an LLM we will use BLEU scores.
 (B) evaluation on populations and slices of special relevance, including an analysis of fairness and bias if relevant (TODO @all if we do content moderation, we have to add something here) 
 (C) test on known failure modes 
 (D) and unit tests based on templates. Depending on the test results, you will automatically register an updated model in the model registry, or not.
 - Load test in staging: 
 - Online evaluation in Canary: 
 - Close the loop: 
-- Business-specific evaluation:  -->
+- Business-specific evaluation: 
 
 ##### Extra Difficulty
 - Develop multiple options for serving: The RegNet model benefits from using GPU for inference and we plan to develop and evaluate an optimized server-grade GPU. OpenVINO execution provider should also be beneficial for our system. We will experiment with all the execution providers and compare the performance of our system.
@@ -152,10 +152,11 @@ optional "difficulty" points you are attempting. -->
 #TO BE UPDATED AFTER LAB 3 IS OUT
 
 ##### Objectives
-- Infrastructure-as-code: You will avoid ClickOps in provisioning your infrastructure. Instead, you’ll define your infrastructure configuration in version control using either a declarative style (like Terraform, which we use in Lab 3) or imperative style (like Python-Chi, used in many other labs). This configuration must live in Git. You will similarly avoid manual installation and configuration of your infrastructure, once it is deployed. Instead, you can use a combination of automation tools like Ansible (used in Lab 3), ArgoCD (used in Lab 3), Argo Workflows (used in Lab 3), Helm, python-chi, and/or other tools to set up your infrastructure. Like your infrastructure configuration, these service and software configurations must live in Git.
+- Infrastructure-as-code: The hardware requirements for our project will be provisioned using YAML and terraform. The software/service setup will be configured using ArgoCD and Argo workflows. And all these configurations will live on git. 
 
-- Cloud-native: You will be expected to develop your project as a “cloud-native” service. This means: (1) Immutable infrastructure: you avoid manual changes to infrastructure that has already been deployed. Instead, make changes to your configurations in Git, and then bring up your new infrastructure directly from these configurations. (2) Microservices: to a reasonable extent, deploy small independent pieces that work together via APIs, but are managed separately. (3) Containers as the smallest compute unit: you will containerize all services, so they can be deployed and scaled efficiently. You won’t run anything (except building and managing containers!) directly on compute instances.
+- Cloud-native: We will ensure immutability in our infrastructure by using IaC and as seen in our design diagram the RegNet and LLM's will be two separate microservices having separate API endpoints. All code will be containerized and run on docker/K8.
 
-- CI/CD and continuous training: You will define an automated pipeline that, in response to a trigger (which may be a manual trigger, a schedule, or an external condition, or some combination of these), will: re-train your model, run the complete offline evaluation suite, apply the post-training optimizations for serving, test its integration with the overall service, package it inside a container for the deployment environment, and deploy it to a staging area for further testing (e.g. load testing).
+- CI/CD and continuous training: 
+You will define an automated pipeline that, in response to a trigger (which may be a manual trigger, a schedule, or an external condition, or some combination of these), will: re-train your model, run the complete offline evaluation suite, apply the post-training optimizations for serving, test its integration with the overall service, package it inside a container for the deployment environment, and deploy it to a staging area for further testing (e.g. load testing).
 
 -Staged deployment: You will configure a “staging”, “canary”, and “production” environment in which your service may be deployed. You will also implement a process by which a service is promoted from the staging area to a canary environment, for online evaluation, and a process by which a service is promoted from canary to production.
