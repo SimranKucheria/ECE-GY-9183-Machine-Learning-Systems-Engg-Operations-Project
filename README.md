@@ -1,5 +1,5 @@
 
-## AI Detection + Auto-Captioning for Transparency in Image Platforms
+## DeepTrust: AI-Generated Media Detection & Smart Tagging
 
 <!-- 
 Discuss: Value proposition: Your will propose a machine learning system that can be 
@@ -25,6 +25,8 @@ First row: define responsibilities that are shared by the team.
 Then, each row after that is: name of contributor, their role, and in the third column, 
 you will link to their contributions. If your project involves multiple repos, you will 
 link to their contributions in all repos here. -->
+
+Team Name: 
 
 | Name             | Responsible for                       | Link to their commits in this repo |
 | ---------------- | ------------------------------------- | ---------------------------------- |
@@ -66,7 +68,7 @@ The table below shows an example, it is not a recommendation. -->
 | Requirement     | How many/when                                     | Justification |
 | --------------- | ------------------------------------------------- | ------------- |
 | `m1.medium` VMs | 3 for entire project duration                     | ...           |
-| `gpu_mi100`     | 4 hour block thrice a week                         |               |
+| `gpu_mi100`     | 4 hour block thrice a week                        |               |
 | Floating IPs    | 1 for entire project duration, 2 for sporadic use |               |
 | etc             |                                                   |               |
 
@@ -85,21 +87,32 @@ diagram, (3) justification for your strategy, (4) relate back to lecture materia
 <!-- Make sure to clarify how you will satisfy the Unit 4 and Unit 5 requirements, 
 and which optional "difficulty" points you are attempting. -->
 ##### Objectives
-- Train and re-train: The system will use the AI vs Human Images dataset and train a RegNet model to classify whether the image is AI generated or not. Parallely we will use an LLM and finetune it on the COCO dataset such that it generates description for the image, generate tags for it which can be used further for indexing. For the re-train pipeline both the models can have periodic retraining jobs scheduled after a certain amount of data has been annotated. 
+- **Train and re-train**: The system will use the AI vs Human Images dataset and train a RegNet model to classify whether the image is AI generated or not. Parallely we will use an LLM and finetune it on the COCO dataset such that it generates description for the image, generate tags for it which can be used further for indexing. For the re-train pipeline both the models can have periodic retraining jobs scheduled after a certain amount of data has been annotated. 
   
-- Modeling: We have two tasks to solve. First one being an image classification problem we are going ahead with either a RegNet model or a ViT model as these models are known to perform well in image classification tasks and we can use their pretrained weights to finetune for our use case. For image captioning as the second task we have decided to go ahead with a multimodel LLM model (Qwen/Qwen2-VL-7B) as it is pretrained on a large dataset and can be finetuned for image captioning. The pretrained knowledge of the model will help us in generating more meaningful captions and tags.
+- **Modeling**: We have two tasks to solve. First one being an image classification problem we are going ahead with either a RegNet model or a ViT model as these models are known to perform well in image classification tasks and we can use their pretrained weights to finetune for our use case. For image captioning as the second task we have decided to go ahead with a multimodel LLM model (Qwen/Qwen2-VL-7B) as it is pretrained on a large dataset and can be finetuned for image captioning. The pretrained knowledge of the model will help us in generating more meaningful captions and tags.
   
-- Experiment tracking: Both the model will be tracked using MLFlow to track model experiments, hyperparameters and metrics. This will help us in logging the model performance and also help us in comparing the models. We will also use MLFlow to track the training jobs and their artifacts.
+- **Experiment tracking**: Both the model will be tracked using MLFlow to track model experiments, hyperparameters and metrics. This will help us in logging the model performance and also help us in comparing the models. We will also use MLFlow to track the training jobs and their artifacts. Some of the experiments that we are planning to run are:
+    - For RegNet Classification Model:
+      - Different architectures changes such as adding dropouts, playing around with input size etc.
+      - Different optimizers such as Adam, SGD, AdamW etc.
+      - Different learning rates and schedulers.
+      - Different augmentation techniques such as random cropping, flipping, rotation etc.
+      - Different training strategies such as gradient accumulation and mixed precision.
+    - For LLM Captioning Model:
+      - Different multi-modal architectures such as Qwen/Qwen2-VL-7B, Llama-3.2-11B-Vision-Instruct
+      - Different parameters for LoRA and QLoRA for finetuning.
   
-- Scheduling training jobs: All the jobs required for training/re-training will be submitted via a ray cluster.
+- **Scheduling training jobs**: All the jobs required for training/re-training will be submitted via a ray cluster.
 
 ##### Extra Difficulty
-- Training strategies for large models: The LLM/Resnet models are too large to fit on a low end GPU. Hence some strategies like PEFT, gradient accumulation and mixed precision will be used whilst training. These experiments will be tracked using MLFLow to come up with the most optimum model.
-- Use distributed training to increase velocity: We will experiment with FSDP/DDP techniques whilst running experiments on our model.
-  
-- Using Ray Train: We will use Ray-Train to ensure frequent checkpointing and guarantee fault tolerance whilst training.
 
-- Scheduling hyperparameter tuning jobs: We will use Ray Tune to schedule hyperparameter tuning jobs for the RegNet model for classification task. 
+- **Training strategies for large models**: The LLM/Resnet models are too large to fit on a low end GPU. Hence some strategies like PEFT, gradient accumulation and mixed precision will be used whilst training. These experiments will be tracked using MLFLow to come up with the most optimum model.
+  
+- **Use distributed training to increase velocity**: We will experiment with FSDP/DDP techniques whilst running experiments on our model.
+  
+- **Using Ray Train**: We will use Ray-Train to ensure frequent checkpointing and guarantee fault tolerance whilst training.
+
+- **Scheduling hyperparameter tuning jobs**: We will use Ray Tune to schedule hyperparameter tuning jobs for the RegNet model for classification task. 
 
 
 #### Model serving and monitoring platforms
@@ -108,23 +121,23 @@ and which optional "difficulty" points you are attempting. -->
 and which optional "difficulty" points you are attempting. -->
 ##### Objectives
 
-- Serving from an API endpoint: The system will be exposed to users through REST API endpoints. We will use a basic SwaggerUI-based backend. The image tags and description will be sent back as a response to different internal stakeholders who can then use the tags for content moderation and indexing. 
+- **Serving from an API endpoint**: The system will be exposed to users through REST API endpoints. We will use a basic SwaggerUI-based backend. The image tags and description will be sent back as a response to different internal stakeholders who can then use the tags for content moderation and indexing. 
   
-- Identify requirements: [Based on platform, come up with concurrency/latency requirements, also talk about model size if we plan to have edge devices host the model?] (TODO @all)
+- **Identify requirements**: [Based on platform, come up with concurrency/latency requirements, also talk about model size if we plan to have edge devices host the model?] (TODO @all)
   
-- Model optimizations to satisfy requirements: Since our system has real-time low-latency requirements and expects a large volume of concurrent users, we will experiment with different model-level optimizations like quantization, and reduced precision using the ONNX backend to keep our inference time as low as possible for our RegNet model. For the LLM we will use either Huggingface Accelerate or vLLM that takes advantage of PagedAttention, continuous batching, and tensor parallelism to reduce the latency of the model. We can also quantize the LLM to reduce the size of the model and improve the inference time.
+- **Model optimizations to satisfy requirements**: Since our system has real-time low-latency requirements and expects a large volume of concurrent users, we will experiment with different model-level optimizations like quantization, and reduced precision using the ONNX backend to keep our inference time as low as possible for our RegNet model. For the LLM we will use either Huggingface Accelerate or vLLM that takes advantage of PagedAttention, continuous batching, and tensor parallelism to reduce the latency of the model. We can also quantize the LLM to reduce the size of the model and improve the inference time.
   
-- System optimizations to satisfy requirements: To further reduce our prediction latency, we will experiment with various system-level optimizations for model serving, including concurrency and batching. We will use different execution providers like Triton, TensorRT, ONNX for our RegNet model.
+- **System optimizations to satisfy requirements**: To further reduce our prediction latency, we will experiment with various system-level optimizations for model serving, including concurrency and batching. We will use different execution providers like Triton, TensorRT, ONNX for our RegNet model.
 
-- Offline evaluation of model: Our system will run an automated offline evaluation plan after model training, with results logged to MLFlow. The offline evaluation will include: 
+- **Offline evaluation of model**: Our system will run an automated offline evaluation plan after model training, with results logged to MLFlow. The offline evaluation will include: 
 (A) evaluation on appropriate domain specific metrics for each model. For AI VS Human Image detection using a RegNet we will use F1 score, Precision, Accuracy and Confusion Matrix. For Image description and tagging using an LLM we will use BLEU scores.
 (B) evaluation on populations and slices of special relevance, including an analysis of fairness and bias if relevant (TODO @all if we do content moderation, we have to add something here) 
-(C) test on known failure modes 
-(D) and unit tests based on templates. Depending on the test results, you will automatically register an updated model in the model registry, or not.
+(C) test on known failure modes where we will try the model on images that are known to be difficult such as low resolution/noisy images, artistic renditions of real images that are not AI generated etc.
+(D) and unit tests based on obvious test cases. Depending on the test results, you will automatically register an updated model in the model registry, or not.
 
-- Load test in staging: Once your “Continuous X” pipeline has deployed the service to a staging area, you should conduct a load test on it, and surface the results. (This load test may also be part of the “continuous X” pipeline.)
-
-- Online evaluation in Canary: When your service is ready to deploy to a canary environment (i.e. it has passed tests in staging), you will conduct an online evaluation (like in Lab 7) with artificial “users”. (You yourself will “be” the users; you should prepare a plan as to how you will represent the range of real users and user behaviors you might encounter in a real deployment.)
+- **Load test in staging**: We will do a load test for each of the model separately and also for the entire system. This will help us identify if each component is working as expected and individual performance analysis can help us find any bottlenecks in our system.
+   
+- **Online evaluation in Canary**: When your service is ready to deploy to a canary environment (i.e. it has passed tests in staging), you will conduct an online evaluation (like in Lab 7) with artificial “users”. (You yourself will “be” the users; you should prepare a plan as to how you will represent the range of real users and user behaviors you might encounter in a real deployment.)
 
 - Close the loop: Implement a means by which you get feedback about the quality of your model’s predictions in productions; whether this is with explicit user feedback, human annotators, or natural ground truth labels. Also, during production, you will save some portion of production data, label it, and use it for re-training on updated data.
 
@@ -163,4 +176,4 @@ optional "difficulty" points you are attempting. -->
 - CI/CD and continuous training: 
 You will define an automated pipeline that, in response to a trigger (which may be a manual trigger, a schedule, or an external condition, or some combination of these), will: re-train your model, run the complete offline evaluation suite, apply the post-training optimizations for serving, test its integration with the overall service, package it inside a container for the deployment environment, and deploy it to a staging area for further testing (e.g. load testing).
 
--Staged deployment: You will configure a “staging”, “canary”, and “production” environment in which your service may be deployed. You will also implement a process by which a service is promoted from the staging area to a canary environment, for online evaluation, and a process by which a service is promoted from canary to production.
+- Staged deployment: You will configure a “staging”, “canary”, and “production” environment in which your service may be deployed. You will also implement a process by which a service is promoted from the staging area to a canary environment, for online evaluation, and a process by which a service is promoted from canary to production.
