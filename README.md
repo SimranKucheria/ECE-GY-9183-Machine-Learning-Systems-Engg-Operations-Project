@@ -121,10 +121,14 @@ and which optional "difficulty" points you are attempting. -->
 (B) evaluation on populations and slices of special relevance, including an analysis of fairness and bias if relevant (TODO @all if we do content moderation, we have to add something here) 
 (C) test on known failure modes 
 (D) and unit tests based on templates. Depending on the test results, you will automatically register an updated model in the model registry, or not.
-- Load test in staging: 
-- Online evaluation in Canary: 
-- Close the loop: 
-- Business-specific evaluation: 
+
+- Load test in staging: Once your “Continuous X” pipeline has deployed the service to a staging area, you should conduct a load test on it, and surface the results. (This load test may also be part of the “continuous X” pipeline.)
+
+- Online evaluation in Canary: When your service is ready to deploy to a canary environment (i.e. it has passed tests in staging), you will conduct an online evaluation (like in Lab 7) with artificial “users”. (You yourself will “be” the users; you should prepare a plan as to how you will represent the range of real users and user behaviors you might encounter in a real deployment.)
+
+- Close the loop: Implement a means by which you get feedback about the quality of your model’s predictions in productions; whether this is with explicit user feedback, human annotators, or natural ground truth labels. Also, during production, you will save some portion of production data, label it, and use it for re-training on updated data.
+
+- Business-specific evaluation: Although you will not be able to realize this plan, because your system will not really be deployed to users as part of a production service, you should define a business-specific evaluation plan with respect to business metrics, and explain how you will measure this in production.
 
 ##### Extra Difficulty
 - Develop multiple options for serving: The RegNet model benefits from using GPU for inference and we plan to develop and evaluate an optimized server-grade GPU. OpenVINO execution provider should also be beneficial for our system. We will experiment with all the execution providers and compare the performance of our system.
