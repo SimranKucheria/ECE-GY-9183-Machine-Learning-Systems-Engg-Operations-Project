@@ -30,7 +30,7 @@ Team Name:
 
 | Name             | Responsible for                       | Link to their commits in this repo |
 | ---------------- | ------------------------------------- | ---------------------------------- |
-| All team members |                                       |                                    |
+| Team AMPS!       |                                      |                                    |
 | Ansh Sarkar      | Model Training (Unit 4&5)             |                                    |
 | Manali Tanna     | Model Serving & Monitoring (Unit 6&7) |                                    |
 | Princy Doshi     | Data Pipeline (Unit 8)                |                                    |
@@ -43,6 +43,9 @@ Team Name:
 <!-- Overall diagram of system. Doesn't need polish, does need to show all the pieces. 
 Must include: all the hardware, all the containers/software platforms, all the models, 
 all the data. -->
+
+<!-- Insert image here -->
+![System Diagram](images/System%20Diagram.png)
 
 ### Summary of outside materials
 
@@ -77,10 +80,6 @@ The table below shows an example, it is not a recommendation. -->
 <!-- In each section, you should describe (1) your strategy, (2) the relevant parts of the 
 diagram, (3) justification for your strategy, (4) relate back to lecture material. 
 (5) include specific numbers. -->
-
-<!-- Insert image here -->
-![System Diagram](images/System%20Diagram.png)
-
 
 #### Model training and training platforms
 
@@ -163,7 +162,7 @@ optional "difficulty" points you are attempting. -->
 
 - Offline data: 80% of both the datasets outlined above will be used as offline data stored in the above provisioned data storage.
 
-- Data pipelines: idk this guys
+- Data pipelines: Our data pipeline will ingest image data from multiple data sources including our AI vs. Human dataset and MS COCO. The pipeline will also clean the data such that it is ready to use for model training. The original versions will be stored in the raw data storage. We'll also employ dataset versioning. We will perform data quality checks to validate incoming images for dimensions, and format compliance before entering the pipeline. For production feedback, we'll implement a closed-loop system where user reports and corrections are automatically fed back into our training datasets after human verification.
 
 - Online data: A script to simulate data consisting of images, some AI-generated, some real.
 #### Continuous X
