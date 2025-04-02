@@ -28,13 +28,13 @@ link to their contributions in all repos here. -->
 
 Team Name: 
 
-| Name             | Responsible for                       | Link to their commits in this repo |
-| ---------------- | ------------------------------------- | ---------------------------------- |
-| Team AMPS!       |                                      |                                    |
-| Ansh Sarkar      | Model Training (Unit 4&5)             |                                    |
-| Manali Tanna     | Model Serving & Monitoring (Unit 6&7) |                                    |
-| Princy Doshi     | Data Pipeline (Unit 8)                |                                    |
-| Simran Kucheria  | Continuous Pipeline (Unit 3)          |                                    |
+| Name            | Responsible for                       | Link to their commits in this repo |
+| --------------- | ------------------------------------- | ---------------------------------- |
+| Team AMPS!      |                                       |                                    |
+| Ansh Sarkar     | Model Training (Unit 4&5)             |                                    |
+| Manali Tanna    | Model Serving & Monitoring (Unit 6&7) |                                    |
+| Princy Doshi    | Data Pipeline (Unit 8)                |                                    |
+| Simran Kucheria | Continuous Pipeline (Unit 3)          |                                    |
 
 
 
@@ -68,12 +68,12 @@ conditions under which it may be used. -->
 how much/when, justification. Include compute, floating IPs, and persistent storage. 
 The table below shows an example, it is not a recommendation. -->
 
-| Requirement     | How many/when                                     | Justification |
-| --------------- | ------------------------------------------------- | ------------- |
-| `m1.medium` VMs | 3 for entire project duration                     | ...           |
-| `gpu_mi100`     | 4 hour block thrice a week                        |               |
-| Floating IPs    | 1 for entire project duration, 2 for sporadic use |               |
-| etc             |                                                   |               |
+| Requirement                             | How many/when                                     | Justification |
+| --------------------------------------- | ------------------------------------------------- | ------------- |
+| `m1.medium` VMs                         | 3 for entire project duration                     | ...           |
+| `⁠gigaio-compute-07` or  `P3-GPU-009 ⁠` | 4 hour block thrice a week                        |               |
+| Floating IPs                            | 1 for entire project duration, 2 for sporadic use |               |
+| etc                                     |                                                   |               |
 
 ### Detailed design plan
 
