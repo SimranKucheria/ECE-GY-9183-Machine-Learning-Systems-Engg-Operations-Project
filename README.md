@@ -131,22 +131,23 @@ Latency Requirements:
 - **System optimizations to satisfy requirements**: To further reduce our prediction latency, we will experiment with various system-level optimizations for model serving, including concurrency and batching. We will use different execution providers like Triton, TensorRT, ONNX for our RegNet model.
 
 - **Offline evaluation of model**: Our system will run an automated offline evaluation plan after model training, with results logged to MLFlow. The offline evaluation will include: 
-(A) evaluation on appropriate domain specific metrics for each model. For AI VS Human Image detection using a RegNet we will use F1 score, Precision, Accuracy and Confusion Matrix. For Image description and tagging using an LLM we will use BLEU scores.
-(B) evaluation on populations and slices of special relevance, including an analysis of fairness and bias if relevant (TODO @all if we do content moderation, we have to add something here) 
-(C) test on known failure modes where we will try the model on images that are known to be difficult such as low resolution/noisy images, artistic renditions of real images that are not AI generated etc.
-(D) and unit tests based on obvious test cases. Depending on the test results, you will automatically register an updated model in the model registry, or not.
+
+  - Evaluation on appropriate domain specific metrics for each model. For AI VS Human Image detection using a RegNet we will use F1 score, Precision, Accuracy and Confusion Matrix. For Image description and tagging using an LLM we will use BLEU scores.
+  - We will evaluate the model on different populations of images such as images with humans, animals, objects etc. We will also evaluate the model on different slices of data such as images with different resolutions, images with different colors, images with different backgrounds etc.
+  - Test on known failure modes where we will try the model on images that are known to be difficult such as low resolution/noisy images, artistic renditions of real images that are not AI generated etc.
+  - Unit tests based on templates. We will create a set of unit tests comprising of images that we have an expected output for. These tests will be run on the model to check if the model is working as expected. We will also create a set of unit tests for the API endpoints to check if the API is working as expected.
 
 - **Load test in staging**: We will do a load test for each of the model separately and also for the entire system. This will help us identify if each component is working as expected and individual performance analysis can help us find any bottlenecks in our system.
    
 - **Online evaluation in Canary**: Simulate data patterns corresponding to different category of users - multiple posts, misinformation, model users etc. The data range of these users to represent all the different categories of data seen so far.
 
 - **Close the loop**: We plan to close the loop in various ways.
-    - User feedback on whether an AI generated image has been tagged correctly.
-    - Human Annotators with respect to tags generated for images.
+    - For the AI vs Human Image detection model, we will use the feedback from the users. All the images that were tagged as AI generated will be sent to a human moderator who will verify if the image is AI generated or not and a random sample of images that were not tagged as AI generated will also be sent to a human moderator for verification. This feedback loop will help us add more data for both the classes.
+    - For image captioning and tagging, we will use human annotators to annotate a random sample of images and add it to our training dataset. This will keep our model up to date with any latest trends and changes in the data.
 
 - **Business-specific evaluation**: The business specific evaluation for this system can be done in the following ways
     - A metric to evaluate the percentage of correctly tagged images with respect to AI-generated content.
-    - A metric like Click Through Rate to evaluate how quickly is useful content being returned with the use of information retrieval mechanisms.
+    - A metric like Click Through Rate (CTR) to evaluate how quickly is useful content being returned with the use of information retrieval mechanisms.
 
 ##### Extra Difficulty
 - **Develop multiple options for serving**: The RegNet model benefits from using GPU for inference and we plan to develop and evaluate an optimized server-grade GPU. OpenVINO execution provider should also be beneficial for our system. We will experiment with all the execution providers and compare the performance of our system.
@@ -166,6 +167,8 @@ optional "difficulty" points you are attempting. -->
 - Data pipelines: Our data pipeline will ingest image data from multiple data sources including our AI vs. Human dataset and MS COCO. The pipeline will also clean the data such that it is ready to use for model training. The original versions will be stored in the raw data storage. We'll also employ dataset versioning. We will perform data quality checks to validate incoming images for dimensions, and format compliance before entering the pipeline. For production feedback, we'll implement a closed-loop system where user reports and corrections are automatically fed back into our training datasets after human verification.
 
 - Online data: A script to simulate data consisting of images, some AI-generated, some real.
+
+
 #### Continuous X
 
 <!-- Make sure to clarify how you will satisfy the Unit 3 requirements,  and which 
@@ -182,4 +185,5 @@ A CI/CD pipeline will be defined on Gitlab with configurations for all of the ot
 
 <!-- You will define an automated pipeline that, in response to a trigger (which may be a manual trigger, a schedule, or an external condition, or some combination of these), will: re-train your model, run the complete offline evaluation suite, apply the post-training optimizations for serving, test its integration with the overall service, package it inside a container for the deployment environment, and deploy it to a staging area for further testing (e.g. load testing). -->
 
+TODO:
 - Staged deployment: You will configure a “staging”, “canary”, and “production” environment in which your service may be deployed. You will also implement a process by which a service is promoted from the staging area to a canary environment, for online evaluation, and a process by which a service is promoted from canary to production.
