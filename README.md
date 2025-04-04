@@ -21,7 +21,10 @@ Business Metrics: Throughput, latency etc dont count. Click Through Rate, More c
 -->
 
 Proposing a system that can be used inside Flickr to increase transparency by using an ML model to detect/flag AI-generated images for potential review and enabling auto-captioning to tag images for indexing.
+
 Flickr boasts of 10billion photos shared since inception with about 25million photos shared daily. That translates to a concurrency requirement of 300/second. The system we are proposing right now can handle upto 50 requests/second with the capability of scaling more.
+
+By incorporating AI vs. human image detection, Flickr can provide users with authenticity in visual content, helping them distinguish between real and AI-generated images. This is particularly valuable for photographers who rely on Flickr for genuine community shared content. Additionally, auto-captioning and tagging allowing the Flickr team to tag images more efficiently and thereby enhancing searchability. Moreover, the description and tags generated will be meaningful opening up avenues for future work. These improvements can boost user engagement, content organization, and accessibility, making Flickr a more valuable platform.
 
 **Value Proposition:** The platform will be able to moderate content better and prevent misinformation using the tags provided by the model. Additionally, the automatic tagging mechanism can also be used in content indexing.
 
