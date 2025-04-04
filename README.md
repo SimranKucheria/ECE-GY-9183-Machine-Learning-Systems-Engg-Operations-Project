@@ -28,7 +28,7 @@ Proposing a system that can be used inside Flickr to increase transparency by us
 
 **Status Quo:** Users are consuming content on Flickr without any indication of whether an image is AI-generated or authentic, which can lead to misinformation and difficulty in verifying sources. We have noticed articles online [(Reddit: AI Content is Putting Me Off)](https://www.reddit.com/r/flickr/comments/1bajy3p/ai_content_is_putting_me_off/) of users expressing frustration over increasing number of AI generated images on Flickr. Currently, content is uploaded with manual captions that may or may not be accurate, detailed, or useful for search and discovery. Many users either leave captions blank, use vague descriptions, or provide misleading tags, making it difficult to retrieve relevant images efficiently. Additionally, without standardized metadata, content moderation and manually identifying inappropriate or AI-generated content at such scale is impractical.
 
-Flickr boasts of 10billion photos shared since inception with about 25million photos shared daily. That translates to a concurrency requirement of 300/second. The system we are proposing right now can handle upto 50 requests/second with the capability of scaling more.
+Flickr boasts of 10billion photos shared since inception with about 25 million photos shared daily. That translates to a concurrency requirement of 300/second. The system we are proposing right now can handle upto 50 requests/second with the capability of scaling more.
 
 <!-- 
 Users are consuming content with no way of knowing if it is AI-generated or not. Content is being uploaded with manual captions that may or may not help with information retrieval or censorship. -->
@@ -144,9 +144,9 @@ and which optional "difficulty" points you are attempting. -->
 - **Serving from an API endpoint**: The system will be exposed to users through REST API endpoints. We will use a basic SwaggerUI-based backend. The image tags and description will be sent back as a response to different internal stakeholders who can then use the tags for content moderation and indexing. 
   
 - **Identify requirements**: 
-#TODO
-Concurrency Requirements:
-Latency Requirements:
+  - The system must be highly available and scalable to support global user traffic, including unexpected spikes in usage. However the system does not have to provide inference in real time and can afford to have a delay since the system is used internally and does not directly face the user.
+  - Flickr handles approximately 25 million uploads per day, translating to an average of ~300 image uploads per second. The proposed system currently supports up to 50 requests per second, with built-in auto-scaling capabilities to accommodate peak loads.
+  - The ideal model inference time (for AI detection and captioning) should be ≤ 5 minutes per request. The API gateway should introduce no more than 200ms of latency. The total end-to-end response time, from image upload to processed output, should not exceed 10 minutes to ensure a scalable and accurate system.
   
 - **Model optimizations to satisfy requirements**: Since our system has real-time low-latency requirements and expects a large volume of concurrent users, we will experiment with different model-level optimizations like quantization, and reduced precision using the ONNX backend to keep our inference time as low as possible for our RegNet model. For the LLM we will use either Huggingface Accelerate or vLLM that takes advantage of PagedAttention, continuous batching, and tensor parallelism to reduce the latency of the model. We can also quantize the LLM to reduce the size of the model and improve the inference time.
   
@@ -207,5 +207,4 @@ A CI/CD pipeline will be defined on Gitlab with configurations for all of the ot
 
 <!-- You will define an automated pipeline that, in response to a trigger (which may be a manual trigger, a schedule, or an external condition, or some combination of these), will: re-train your model, run the complete offline evaluation suite, apply the post-training optimizations for serving, test its integration with the overall service, package it inside a container for the deployment environment, and deploy it to a staging area for further testing (e.g. load testing). -->
 
-TODO:
-- Staged deployment: You will configure a “staging”, “canary”, and “production” environment in which your service may be deployed. You will also implement a process by which a service is promoted from the staging area to a canary environment, for online evaluation, and a process by which a service is promoted from canary to production.
+- Staged deployment: We will configure “staging”, “canary”, and “production” environments on which our service may be deployed. We will use a combination of kubernetes, MLFlow, Argo Workflows and github actions for this. You will also implement a process by which a service is promoted from the staging area to a canary environment, for online evaluation, and a process by which a service is promoted from canary to production.
