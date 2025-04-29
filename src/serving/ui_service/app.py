@@ -4,6 +4,22 @@ from flask import Flask, redirect, url_for, request, render_template
 from werkzeug.utils import secure_filename
 import os
 import base64
+from mimetypes import guess_type # used to identify the type of image
+from datetime import datetime # used to generate timestamp tag for image
+import uuid # used to generate unique ID per image
+import boto3 # client for s3-compatible object store, including MinIO
+from concurrent.futures import ThreadPoolExecutor  # used for the thread pool that will upload images to MinIO
+executor = ThreadPoolExecutor(max_workers=2)  # can adjust max_workers as needed
+import logging
+
+# Authenticate to MinIO object store
+s3 = boto3.client(
+    's3',
+    endpoint_url=os.environ['MINIO_URL'],  # e.g. 'http://minio:9000'
+    aws_access_key_id=os.environ['MINIO_USER'],
+    aws_secret_access_key=os.environ['MINIO_PASSWORD'],
+    region_name='us-east-1'  # required for the boto client but not used by MinIO
+)
 
 app = Flask(__name__)
 
@@ -12,7 +28,40 @@ os.makedirs(os.path.join(app.instance_path, 'uploads'), exist_ok=True)
 FASTAPI_SERVER_URL = os.environ['FASTAPI_SERVER_URL']  # New: FastAPI server URL
 # FASTAPI_SERVER_URL = os.environ.get('FASTAPI_SERVER_URL', 'http://localhost:8000')
 
-# New! for making requests to FastAPI
+# for uploading production images to MinIO bucket
+def upload_production_bucket(img_path, preds, confidence, prediction_id):
+    classes = np.array(["Human","AI"])
+    timestamp = datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%SZ')
+
+    pred_index = np.where(classes == preds)[0][0]
+    class_dir = f"class_{pred_index:02d}"
+
+    bucket_name = "production"
+    root, ext = os.path.splitext(img_path)
+    content_type = guess_type(img_path)[0] or 'application/octet-stream'
+    s3_key = f"{class_dir}/{prediction_id}{ext}"
+    
+    with open(img_path, 'rb') as f:
+        s3.upload_fileobj(f, 
+            bucket_name, 
+            s3_key, 
+            ExtraArgs={'ContentType': content_type}
+            )
+
+    # tag the object with predicted class and confidence
+    s3.put_object_tagging(
+        Bucket=bucket_name,
+        Key=s3_key,
+        Tagging={
+            'TagSet': [
+                {'Key': 'predicted_class', 'Value': preds},
+                {'Key': 'confidence', 'Value': f"{confidence:.3f}"},
+                {'Key': 'timestamp', 'Value': timestamp}
+            ]
+        }
+    )
+
+# for making requests to FastAPI
 def request_fastapi(image_path):
     try:
         with open(image_path, 'rb') as f:
@@ -32,6 +81,7 @@ def request_fastapi(image_path):
 
     except Exception as e:
         print(f"Error during inference: {e}")  
+        app.logger.error(f"Error during inference: {e}")
         return None, None  
 
 @app.route('/', methods=['GET'])
@@ -45,11 +95,18 @@ def upload():
         f = request.files['file']
         f.save(os.path.join(app.instance_path, 'uploads', secure_filename(f.filename)))
         img_path = os.path.join(app.instance_path, 'uploads', secure_filename(f.filename))
-        
+
+        # create a unique filename for the image
+        prediction_id = str(uuid.uuid4())
+        app.logger.info(f"Prediction ID: {prediction_id}")
+
         preds, probs = request_fastapi(img_path)
+        app.logger.info(f"Predicted class: {preds}")
         if preds:
+            executor.submit(upload_production_bucket, img_path, preds, probs, prediction_id) # New! upload production image to MinIO bucket
+            app.logger.info(f"Image uploaded to production bucket with ID: {prediction_id}")
             return f'<button type="button" class="btn btn-info btn-sm">{preds}</button>'
-    
+
     return '<a href="#" class="badge badge-warning">Warning</a>'
 
 @app.route('/test', methods=['GET'])
@@ -59,4 +116,4 @@ def test():
     return str(preds)
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000, debug=False)
+    app.run(host='0.0.0.0', port=5000, debug=True)
