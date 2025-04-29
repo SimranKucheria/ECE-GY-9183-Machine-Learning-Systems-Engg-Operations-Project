@@ -17,7 +17,6 @@ terraform plan
 terraform apply -auto-approve
 UC_FIP=$(terraform output -raw floating_ip_out)
 cd /work/deeptrust/src/continuous-x/tf/tacc
-unset $(set | grep -o "^OS_[A-Za-z0-9_]*")
 terraform init
 terraform validate
 terraform plan
