@@ -8,6 +8,7 @@ from torchvision.transforms import InterpolationMode
 from PIL import Image
 import io
 import numpy as np
+from prometheus_fastapi_instrumentator import Instrumentator
 
 
 app = FastAPI(
@@ -75,3 +76,5 @@ def predict_image(request: ImageRequest):
 
     except Exception as e:
         return {"error": str(e)}
+    
+Instrumentator().instrument(app).expose(app)
