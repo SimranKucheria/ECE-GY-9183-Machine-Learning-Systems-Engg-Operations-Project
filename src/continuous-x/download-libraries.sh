@@ -14,9 +14,9 @@ export PATH=/work/.local/bin:$PATH
 
 PYTHONUSERBASE=/work/.local pip install --user ansible-core==2.16.9 ansible==9.8.0
 
-export PATH=/work/.local/bin:$PATH
-export PYTHONUSERBASE=/work/.local
+# export PATH=/work/.local/bin:$PATH
+# export PYTHONUSERBASE=/work/.local
 
-PYTHONUSERBASE=/work/.local pip install --user -r /work/deeptrust/src/continuous-x/ansible/k8s/kubespray/requirements.txt
+# PYTHONUSERBASE=/work/.local pip install --user -r /work/deeptrust/src/continuous-x/ansible/k8s/kubespray/requirements.txt
 
 

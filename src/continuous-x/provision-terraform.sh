@@ -2,7 +2,7 @@
 
 export PATH=/work/.local/bin:$PATH
 export TF_VAR_suffix=project3
-export TF_VAR_key=MLOPS_Project3_RSA
+export TF_VAR_key=id_rsa_chameleon
 unset $(set | grep -o "^OS_[A-Za-z0-9_]*")
 cd /work/deeptrust/src/continuous-x/tf/kvm
 terraform init
