@@ -1,0 +1,22 @@
+version: "3.8"
+
+services:
+  vllm:
+    image: vllm/vllm-openai:latest
+    container_name: vllm
+    runtime: nvidia
+    environment:
+      - HUGGING_FACE_HUB_TOKEN=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
+      - NVIDIA_VISIBLE_DEVICES=all
+    ports:
+      - "8005:8000"
+    volumes:
+      - ~/.cache/huggingface:/root/.cache/huggingface
+    command: --model mistralai/Mistral-7B-Instruct-v0.2
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              capabilities: [gpu]
+    ipc: host
