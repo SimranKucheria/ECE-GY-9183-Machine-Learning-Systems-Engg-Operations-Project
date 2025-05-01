@@ -1,0 +1,141 @@
+name: project3-etl
+
+volumes:
+  Project3Data:
+
+services:
+  extract-data:
+    container_name: etl_extract_data
+    image: python:3.11
+    user: root
+    volumes:
+      - Project3Data:/data
+    working_dir: /data
+
+    command:
+      - bash
+      - -c
+      - |
+        set -e
+
+        echo "Resetting dataset directory..."
+        rm -rf AiVsHuman
+        mkdir -p AiVsHuman
+        cd AiVsHuman
+
+        
+        echo "Downloading AIvsHuman dataset zip..."
+        curl -L https://www.kaggle.com/api/v1/datasets/download/alessandrasala79/ai-vs-human-generated-dataset -o AiVsHuman.zip
+        
+        echo "Unzipping dataset..."
+        unzip -q AiVsHuman.zip
+        rm -f AiVsHuman.zip
+
+        rm -rf test_data_v2
+        rm -rf test.csv
+        mv train_data Images
+        rm -rf train_data
+        sed -i 's|train_data/||g' train.csv
+        echo "Listing contents of /data/AiVsHuman after extract stage:"
+        ls -l /data/AiVsHuman
+
+  sanitise-data:
+    container_name: etl_sanitise_data
+    image: python:3.11
+    volumes:
+      - Project3Data:/data
+    working_dir: /data/AiVsHuman
+    command:
+      - bash
+      - -c
+      - |
+        set -e
+        pip install Pillow 
+        python3 -c '
+        import os
+        from PIL import Image
+        import csv
+
+        csv_path = "train.csv"
+        base_dir = os.path.dirname(csv_path)
+        base_dir = os.path.join(base_dir,"Images")
+
+        missing_files = []
+        all_valid = True
+        count= 0
+        with open(csv_path, "r", newline="") as csvfile: 
+          reader = csv.reader(csvfile) 
+          header = next(reader) 
+          for row in reader:
+            count+=1
+            id, file_name, value = row
+            img_path = os.path.join(base_dir, file_name)
+            if not os.path.exists(img_path):
+                missing_files.append(file_name)
+                all_valid = False
+                continue
+                  
+                with Image.open(img_path) as img:
+                    if len(img.getbands()) != 3:
+                        rgb_image = img.convert("RGB")
+                        rgb_image.save(img_path)
+
+        # Print summary
+        print(f"Validation complete:")
+        print(f"Total images checked: {count}")
+        print(f"Missing files: {len(missing_files)}")
+        print(f"All images valid: {all_valid}")
+        '                        
+
+        echo "Listing contents of /data/AiVsHuman after transform stage:"
+        ls -l /data/AiVsHuman
+         
+  transform-data:
+    container_name: etl_transform_data
+    image: python:3.11
+    volumes:
+      - Project3Data:/data
+    working_dir: /data/AiVsHuman
+    environment:
+      - train_split=0.7
+      - validation_split=0.1
+    command:
+      - bash
+      - -c
+      - |
+        set -e
+        pip install scikit-learn
+        pip install pandas
+        python3 -c '
+        from sklearn.model_selection import train_test_split
+        import pandas as pd
+        import os
+
+        dataset_base_dir = "/data/AiVsHuman"
+
+        df = pd.read_csv("train.csv")
+        print(len(df))
+        train_split = float(os.environ["train_split"])
+        valid_split = float(os.environ["validation_split"])
+        test_split = float(1-(train_split+valid_split))
+        valid_split = float(valid_split/(valid_split+test_split))
+    
+        x_train, x_test, y_train, y_test = train_test_split(df["file_name"], df["label"], test_size=float(1-train_split), random_state=42,stratify = df["label"])
+        df = pd.concat([x_test,y_test], axis=1)
+        
+        x_val, x_test, y_val, y_test = train_test_split(df["file_name"], df["label"], test_size=float(1-valid_split), random_state=42,stratify= df["label"])
+        train_df = pd.concat([x_train , y_train], axis = 1)
+        valid_df = pd.concat([x_val , y_val], axis = 1)
+        test_df = pd.concat([x_test,y_test], axis=1)
+        train_df.to_csv("training.csv",index=False)
+        valid_df.to_csv("validation.csv",index=False)
+        test_df.to_csv("testing.csv",index=False)
+        print(len(train_df))
+        print(len(valid_df))
+        print(len(test_df))
+        '
+        
+        
+        rm -rf train.csv
+        echo "Listing contents of /data/AiVsHuman after transform stage:"
+        ls -l /data/AiVsHuman        
