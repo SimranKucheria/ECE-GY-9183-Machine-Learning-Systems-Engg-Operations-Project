@@ -1,0 +1,34 @@
+volumes:
+  Project3Data:
+    external: true
+
+services:
+  extract-data:
+    container_name: etl_extract_data
+    image: python:3.11
+    user: root
+    volumes:
+      - Project3Data:/data
+    working_dir: /data
+
+    command:
+      - bash
+      - -c
+      - |
+        set -e
+
+        echo "Creating dataset directory..."
+        mkdir -p /data/AiVsHuman
+        cd /data/AiVsHuman
+
+        
+        echo "Downloading AIvsHuman dataset zip..."
+        curl -L https://www.kaggle.com/api/v1/datasets/download/alessandrasala79/ai-vs-human-generated-dataset -o AiVsHuman.zip
+        
+        echo "Unzipping dataset..."
+        unzip -q AiVsHuman.zip
+        rm -f AiVsHuman.zip
+
+        echo "Listing contents of /data after extract stage:"
+        ls -l /data/AiVsHuman
+
