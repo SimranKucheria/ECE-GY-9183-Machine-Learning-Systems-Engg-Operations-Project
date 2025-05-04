@@ -10,6 +10,3 @@ cp clouds.yaml /work/deeptrust/src/continuous-x/tf/kvm/clouds.yaml
 cp clouds.yaml /work/deeptrust/src/continuous-x/tf/tacc/clouds.yaml
 cp clouds.yaml /work/deeptrust/src/continuous-x/tf/uc/clouds.yaml
 
-export PATH=/work/.local/bin:$PATH
-
-PYTHONUSERBASE=/work/.local pip install --user ansible-core==2.16.9 ansible==9.8.0
