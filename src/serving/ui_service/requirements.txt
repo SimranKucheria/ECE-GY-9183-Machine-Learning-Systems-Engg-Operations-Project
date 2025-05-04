@@ -2,3 +2,4 @@ Flask
 numpy
 requests
 boto3
+alibi-detect
