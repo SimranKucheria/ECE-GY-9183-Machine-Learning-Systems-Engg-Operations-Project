@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
         - name: label-studio
-          image: :heartexlabs/label-studio:1.16.0
+          image: heartexlabs/label-studio:1.16.0
           env:
             - name: POSTGRES_USER
               value: "user"
