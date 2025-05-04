@@ -9,7 +9,21 @@ from PIL import Image
 import io
 import numpy as np
 from prometheus_fastapi_instrumentator import Instrumentator
+from prometheus_client import Histogram, Counter
 
+# Histogram for prediction confidence
+confidence_histogram = Histogram(
+    "prediction_confidence",
+    "Model prediction confidence",
+    buckets=[0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0]  
+)
+
+# Count how often we predict each class
+class_counter = Counter(
+    "predicted_class_total",
+    "Count of predictions per class",
+    ['class_name']
+)
 
 app = FastAPI(
     title="Human VS AI Image fastAPI",
@@ -71,7 +85,9 @@ def predict_image(request: ImageRequest):
             probabilities = F.softmax(output, dim=1)  # Apply softmax to get probabilities
             predicted_class = torch.argmax(probabilities, 1).item()
             confidence = probabilities[0, predicted_class].item()  # Get the probability
-
+        # Update metrics
+        confidence_histogram.observe(confidence)
+        class_counter.labels(class_name=classes[predicted_class]).inc()
         return PredictionResponse(prediction=classes[predicted_class], probability=confidence)
 
     except Exception as e:
