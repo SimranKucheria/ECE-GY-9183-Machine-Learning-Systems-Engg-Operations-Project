@@ -11,7 +11,7 @@ spec:
   persistentVolumeReclaimPolicy: Retain
   storageClassName: postgres-local-storage
   local:
-    path: /mnt/block/
+    path: /mnt/block2
   nodeAffinity:
     required:
       nodeSelectorTerms:
@@ -63,7 +63,7 @@ spec:
             - containerPort: 5432
           volumeMounts:
             - name: postgres-storage
-              mountPath: /var/lib/postgresql/data/pgd
+              mountPath: /var/lib/postgresql/data/
       volumes:
         - name: postgres-storage
           persistentVolumeClaim:

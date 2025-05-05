@@ -11,7 +11,7 @@ spec:
   persistentVolumeReclaimPolicy: Retain
   storageClassName: local-storage
   local:
-    path: /mnt/block
+    path: /mnt/block1/
   nodeAffinity:
     required:
       nodeSelectorTerms:
