@@ -1,0 +1,24 @@
+name = "MMDDriftOnline"
+x_ref = "x_ref.npy"
+input_shape = "None"
+data_type = "None"
+x_ref_preprocessed = true
+backend = "pytorch"
+ert = 300.0
+window_size = 10
+kernel = "None"
+sigma = "None"
+n_bootstraps = 1000
+device = "None"
+verbose = true
+
+[meta]
+version = "0.12.0"
+version_warning = false
+
+[preprocess_fn]
+src = "@cd.pytorch.preprocess.preprocess_drift"
+
+[preprocess_fn.model]
+flavour = "pytorch"
+src = "preprocess_fn/model"
