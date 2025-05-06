@@ -49,7 +49,10 @@ services:
 
 
   grafana:
-    image: grafana/grafana:latest
+    build:
+      context: ./grafana  
+      dockerfile: Dockerfile
+    # image: grafana/grafana:latest
     container_name: grafana
     ports:
       - "3000:3000"
@@ -58,12 +61,12 @@ services:
     environment:
       - GF_SECURITY_ADMIN_USER=team3_AMPS
       - GF_SECURITY_ADMIN_PASSWORD=team3_AMPS
-    volumes:
-      # Mount application data
-      - ./grafana/dashboards:/var/lib/grafana/dashboards
-      # Mount provisioning config files
-      - ./grafana/provisioning/dashboards:/etc/grafana/provisioning/dashboards
-      - ./grafana/provisioning/datasources:/etc/grafana/provisioning/datasources
+    # volumes:
+    #   # Mount application data
+    #   - ./grafana/dashboards:/var/lib/grafana/dashboards
+    #   # Mount provisioning config files
+    #   - ./grafana/provisioning/dashboards:/etc/grafana/provisioning/dashboards
+    #   - ./grafana/provisioning/datasources:/etc/grafana/provisioning/datasources
     networks:
       - production_net
 
