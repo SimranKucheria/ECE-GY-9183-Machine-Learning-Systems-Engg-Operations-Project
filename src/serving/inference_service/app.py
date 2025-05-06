@@ -10,6 +10,24 @@ import io
 import numpy as np
 from prometheus_fastapi_instrumentator import Instrumentator
 from prometheus_client import Histogram, Counter
+from alibi_detect.saving import load_detector
+from concurrent.futures import ThreadPoolExecutor
+executor = ThreadPoolExecutor(max_workers=2) 
+
+# Load the change detector from file to monitor data drift
+cd = load_detector("cd")
+
+# Counter for drift events
+drift_event_counter = Counter(
+        'drift_events_total', 
+        'Total number of drift events detected'
+)
+
+# Histogram for drift test statistic
+drift_stat_hist = Histogram(
+        'drift_test_stat', 
+        'Drift score distribution'
+)
 
 # Histogram for prediction confidence
 confidence_histogram = Histogram(
@@ -24,6 +42,15 @@ class_counter = Counter(
     "Count of predictions per class",
     ['class_name']
 )
+
+def detect_drift_async(cd, x_np):
+    cd_pred = cd.predict(x_np)
+    test_stat = cd_pred['data']['test_stat']
+    is_drift = cd_pred['data']['is_drift']
+
+    drift_stat_hist.observe(test_stat)
+    if is_drift:
+        drift_event_counter.inc()
 
 app = FastAPI(
     title="Human VS AI Image fastAPI",
@@ -85,9 +112,14 @@ def predict_image(request: ImageRequest):
             probabilities = F.softmax(output, dim=1)  # Apply softmax to get probabilities
             predicted_class = torch.argmax(probabilities, 1).item()
             confidence = probabilities[0, predicted_class].item()  # Get the probability
+            
         # Update metrics
         confidence_histogram.observe(confidence)
         class_counter.labels(class_name=classes[predicted_class]).inc()
+
+        # Detect drift asynchronously
+        x_np = image.squeeze(0).cpu().numpy()
+        executor.submit(detect_drift_async, cd, x_np)
         return PredictionResponse(prediction=classes[predicted_class], probability=confidence)
 
     except Exception as e:
