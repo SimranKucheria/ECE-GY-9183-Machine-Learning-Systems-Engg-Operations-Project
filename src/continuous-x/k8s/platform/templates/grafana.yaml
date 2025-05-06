@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
       - name: grafana
-        image: grafana-deeptrust:latest
+        image: registry.kube-system.svc.cluster.local:5000/grafana-deeptrust:latest
         ports:
         - containerPort: 3000
         env:
