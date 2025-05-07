@@ -8,3 +8,4 @@ all:
     node2:
       ansible_host: E.F.G.H
       ansible_user: cc
+    

@@ -15,20 +15,26 @@ terraform init
 terraform validate
 terraform plan
 terraform apply -auto-approve
-UC_FIP=$(terraform output -raw floating_ip_out)
-cd /work/deeptrust/src/continuous-x/tf/tacc
-terraform init
-terraform validate
-terraform plan
-terraform apply -auto-approve
-TACC_FIP=$(terraform output -raw floating_ip_out)
+UC_FIP1=$(terraform output -raw floating_ip_out1)
+UC_FIP2=$(terraform output -raw floating_ip_out2)
+# cd /work/deeptrust/src/continuous-x/tf/tacc
+# terraform init
+# terraform validate
+# terraform plan
+# terraform apply -auto-approve
+# TACC_FIP=$(terraform output -raw floating_ip_out)
 
 var1="A.B.C.D"
 sed -i 's/'"$var1"'/'"$KVM_FIP"'/g' /work/deeptrust/src/continuous-x/ansible.cfg
 
+sed -i 's/'"$var1"'/'"$UC_FIP1"'/g' /work/deeptrust/src/continuous-x/ansible/ansible-baremetal/inventory.yaml
+
+var2="E.F.G.H"
+sed -i 's/'"$var2"'/'"$UC_FIP2"'/g' /work/deeptrust/src/continuous-x/ansible/ansible-baremetal/inventory.yaml
+
 echo export KVM_FIP="${KVM_FIP}" >> ~/.bashrc
-echo export TACC_FIP="${TACC_FIP}" >> ~/.bashrc
-echo export UC_FIP="${UC_FIP}" >> ~/.bashrc
+echo export UC_FIP1="${UC_FIP1}" >> ~/.bashrc
+echo export UC_FIP2="${UC_FIP2}" >> ~/.bashrc
 
 cp /work/deeptrust/src/continuous-x/ansible.cfg /work/deeptrust/src/continuous-x/ansible/ansible.cfg
      
