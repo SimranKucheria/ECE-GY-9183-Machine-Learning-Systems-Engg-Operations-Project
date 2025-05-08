@@ -18,22 +18,22 @@ services:
       - |
         set -e
 
-        # echo "Resetting dataset directory..."
-        # rm -rf Flickr30k
-        # mkdir -p Flickr30k
+        echo "Resetting dataset directory..."
+        rm -rf Flickr30k
+        mkdir -p Flickr30k
         cd Flickr30k
 
-        # echo "Downloading Flickr30k dataset zip..."
-        # curl -L https://www.kaggle.com/api/v1/datasets/download/adityajn105/flickr30k -o flickr30k-images.zip
+        echo "Downloading Flickr30k dataset zip..."
+        curl -L https://www.kaggle.com/api/v1/datasets/download/adityajn105/flickr30k -o flickr30k-images.zip
         
-        # echo "Unzipping dataset..."
-        # unzip -q flickr30k-images.zip
-        # rm -f flickr30k-images.zip
-        # rm captions.txt
+        echo "Unzipping dataset..."
+        unzip -q flickr30k-images.zip
+        rm -f flickr30k-images.zip
+        rm captions.txt
         curl -L https://storage.googleapis.com/sfr-vision-language-research/datasets/flickr30k_train.json -o flickr30k_train.json
         curl -L https://storage.googleapis.com/sfr-vision-language-research/datasets/flickr30k_val.json  -o flickr30k_val.json
         curl -L https://storage.googleapis.com/sfr-vision-language-research/datasets/flickr30k_test.json -o flickr30k_test.json
-        # mv /data/Flickr30k/Images /data/Flickr30k/flickr30k-images
+        mv /data/Flickr30k/Images /data/Flickr30k/flickr30k-images
         echo "Listing contents of /data after extract stage:"
         ls -l /data/Flickr30k
 
