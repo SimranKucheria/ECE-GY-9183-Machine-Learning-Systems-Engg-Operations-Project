@@ -98,7 +98,7 @@ services:
         ls -l /data/Dataset_Classifier 
 
   load-data:
-    container_name: etl_extract_data
+    container_name: etl_load_data
     image: rclone/rclone:latest
     volumes:
       - Project3Data:/data
