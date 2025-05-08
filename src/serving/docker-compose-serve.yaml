@@ -1,0 +1,99 @@
+name: deeptrust_serve
+services:
+  fastapi_server:
+    build:
+      context: ./inference_service  # relative path to FastAPI code
+      dockerfile: Dockerfile
+    container_name: fastapi_server
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+    ports:
+      - "8000:8000"  # for HTTP requests
+    networks:
+      - production_net  
+
+  triton_server:
+    build:
+      # context: /home/cc/work/BLIP
+      context: ./BLIP  # relative path to Triton code
+      dockerfile: Dockerfile.triton
+    container_name: triton_server
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+    ports:
+      - "8010:8010"  # for HTTP requests
+      - "8001:8001"  # for GRPC requests
+      - "8002:8002"  # for reporting metrics
+    networks:
+      - production_net
+
+  vllm:
+    image: vllm/vllm-openai:latest
+    container_name: vllm
+    runtime: nvidia
+    environment:
+      - HUGGING_FACE_HUB_TOKEN=${HF_API_KEY}
+      - NVIDIA_VISIBLE_DEVICES=all
+    ports:
+      - "8005:8000"
+    volumes:
+      - ~/.cache/huggingface:/root/.cache/huggingface
+    command: --model mistralai/Mistral-7B-Instruct-v0.2
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              capabilities: [gpu]
+    ipc: host
+
+  flask:
+    build:
+      context: ./ui_service  # path to Flask UI code
+      dockerfile: Dockerfile
+    container_name: flask
+    ports:
+      - "80:5000"
+    environment:
+      - FASTAPI_SERVER_URL=http://fastapi_server:8000 
+      - TRITON_SERVER_URL=triton_server:8000
+      - MINIO_URL=http://minio:9000
+      - MINIO_USER=your-access-key
+      - MINIO_PASSWORD=your-secret-key
+    networks:
+      - production_net
+    depends_on:
+      - fastapi_server
+      - minio
+
+  jupyter:
+    image: quay.io/jupyter/minimal-notebook:latest
+    container_name: jupyter
+    ports:
+      - "8888:8888"
+    volumes:
+      - /home/cc/ECE-GY-9183-Machine-Learning-Systems-Engg-Operations-Project/src/serving/workspace:/home/jovyan/work
+    command: >
+      bash -c "python3 -m pip install numpy && start-notebook.sh"
+
+
+
+
+
+networks:
+  production_net:
+    external: true
+
+volumes:
+  minio_data:
+
