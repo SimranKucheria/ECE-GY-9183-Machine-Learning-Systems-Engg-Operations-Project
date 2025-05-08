@@ -3,8 +3,11 @@ all:
     ansible_python_interpreter: /usr/bin/python3
   hosts:
     node1:
-      ansible_host: A.B.C.D
+      ansible_host: 192.168.1.11
       ansible_user: cc
     node2:
-      ansible_host: E.F.G.H
+      ansible_host: 192.168.1.12
       ansible_user: cc
+    node3:
+      ansible_host: 192.168.1.13
+      ansible_user: cc  
