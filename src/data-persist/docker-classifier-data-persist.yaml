@@ -97,7 +97,7 @@ services:
         echo "Listing contents of /data/dataset_classifier after transform stage:"
         ls -l /data/Dataset_Classifier 
 
- load-data:
+  load-data:
     container_name: etl_extract_data
     image: python:3.11
     volumes:

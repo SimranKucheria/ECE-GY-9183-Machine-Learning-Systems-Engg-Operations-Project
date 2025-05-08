@@ -141,7 +141,7 @@ services:
         ls -l /data/AiVsHuman        
 
 
-load-data:
+  load-data:
     container_name: etl_transform_data
     image: python:3.11
     volumes:
