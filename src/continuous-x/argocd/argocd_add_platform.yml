@@ -97,8 +97,6 @@
         --helm-set-string mlflow.externalIP={{ external_ip }} \
         --helm-set-string grafana.externalIP={{ external_ip }} \
         --helm-set-string labelstudio.externalIP={{ external_ip }} \
-        --helm-set-string grafana.externalIP={{ external_ip }} \
-        --helm-set-string labelstudio.externalIP={{ external_ip }} \
         --helm-set-string flask.externalIP={{ external_ip }} \
         --helm-set-string prometheus.externalIP={{ external_ip }} \
         --port-forward --port-forward-namespace=argocd \
