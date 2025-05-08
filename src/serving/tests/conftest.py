@@ -1,3 +1,4 @@
+import base64
 import pytest
 import torch
 from torchvision import transforms
@@ -10,8 +11,10 @@ import pandas as pd
 from PIL import Image
 from sklearn.model_selection import StratifiedKFold
 from tqdm import tqdm
+import requests
 
 
+# Custom dataset class to load and preprocess images from human VS AI Images
 class CustomImageDataset(Dataset):
     def __init__(self, csv_file, img_dir, transform=None):
         self.annotations = csv_file
@@ -29,6 +32,7 @@ class CustomImageDataset(Dataset):
             image = self.transform(image)
         return image, label
 
+# function to load the train and validation folders
 # @pytest.fixture(scope="session")
 def create_dataloaders(csv_file, img_dir, img_size=(224, 224), batch_size=32, n_fold=0):
     transform = transforms.Compose([
@@ -68,8 +72,9 @@ def create_dataloaders(csv_file, img_dir, img_size=(224, 224), batch_size=32, n_
 #                     std=[0.229, 0.224, 0.225]),
 #     ])
 #     return transform().unsqueeze(0) 
-    
 
+
+# function that returns the predictions of the RegNet model on val loader
 @pytest.fixture(scope="session")
 def predict(transform):
     def predict_image(model, image):
@@ -91,11 +96,11 @@ def model():
     _ = model.eval()  
     return model
 
-#     from torchvision.datasets import ImageFolder
-#     img_data_dir = "/Users/manali/nyu/COURSES/Sem4/MLOps/serving/AiVsHuman/Images"
-#     dataset =  ImageFolder(img_data_dir, transform=transform)
+
+# function that returns the val loader
 @pytest.fixture(scope="session")
 def test_data():
+    # @TODO: replace with the actual path
     csv_file = pd.read_csv("/Users/manali/nyu/COURSES/Sem4/MLOps/serving/AiVsHuman/validation.csv")
     img_dir="/Users/manali/nyu/COURSES/Sem4/MLOps/serving/AiVsHuman/Images"
     train_loader, val_loader = create_dataloaders(
@@ -107,6 +112,8 @@ def test_data():
     )
     return val_loader
 
+# function that returns the predictions of the RegNet model on val loader
+# @TODO: replace with ViT model
 @pytest.fixture(scope="session")
 def predictions(model, test_data):
     dataset_size = len(test_data.dataset)
@@ -125,3 +132,42 @@ def predictions(model, test_data):
             current_index += batch_size
 
     return all_labels, all_predictions
+
+# Placeholder: Adjust the Triton server endpoint
+@pytest.fixture(scope="session")
+def triton_server_url():
+    return "http://localhost:8000/v2/models/blip_model/infer"
+
+@pytest.fixture(scope="module")
+def test_data_BLIP():
+    # Dummy test data for image paths and expected captions
+    # Replace with actual image paths and expected captions
+    data = [
+        {"image_path": "./captioning_dummy_test_images/10002456.jpg", "expected_caption": "Workers look down from up above on a piece of equipment ."},
+        {"image_path": "./captioning_dummy_test_images/1000092795.jpg", "expected_caption": "Two men in green shirts are standing in a yard ."},
+    ]                     
+
+    return data
+
+@pytest.fixture(scope="module")
+def generate_caption_triton(image_path, triton_server_url):
+    with open(image_path, 'rb') as img_file:
+        img_bytes = img_file.read()
+
+    img_base64 = base64.b64encode(img_bytes).decode('utf-8')
+
+    payload = {
+        "inputs": [
+            {
+                "name": "image",
+                "shape": [1],
+                "datatype": "BYTES",
+                "data": [img_base64]
+            }
+        ]
+    }
+    response = requests.post(triton_server_url, json=payload)
+    response.raise_for_status()
+    result = response.json()
+    caption = result['outputs'][0]['data'][0]
+    return caption
