@@ -143,7 +143,7 @@ services:
 
   load-data:
     container_name: etl_transform_data
-    image: python:3.11
+    image: rclone/rclone:latest
     volumes:
       - Project3Data:/data
       - ~/.config/rclone/rclone.conf:/root/.config/rclone/rclone.conf:ro
