@@ -1,0 +1,95 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Workflow
+metadata:
+  generateName: kaniko-pvc-build-
+spec:
+  entrypoint: kaniko-build-flow
+  volumeClaimTemplates:
+  - metadata:
+      name: workdir
+    spec:
+      accessModes: [ "ReadWriteOnce" ]
+      resources:
+        requests:
+          storage: 1Gi
+
+  templates:
+  - name: kaniko-build-flow
+    steps:
+      - - name: clone-repo
+          template: git-clone
+      - - name: kaniko-build-grafana
+          template: kaniko-grafana
+      - - name: kaniko-build-flask
+          template: kaniko-flask    
+      - - name: kaniko-build-prometheus
+          template: kaniko-prometheus        
+
+  - name: git-clone
+    container:
+      image: alpine/git
+      command: [sh, -c]
+      args:
+        - |
+          MAX_RETRIES=5
+          i=1
+
+          while [ $i -le $MAX_RETRIES ]; do
+            echo "Attempt $i of $MAX_RETRIES: Cloning repo..."
+            git clone --branch main "https://$GITHUB_TOKEN@github.com/SimranKucheria/ECE-GY-9183-Machine-Learning-Systems-Engg-Operations-Project.git" /mnt/workspace && break
+            echo "Git clone failed. Retrying in 5 seconds..."
+            i=$((i + 1))
+            sleep 5
+          done
+
+          if [ ! -d /mnt/workspace/.git ]; then
+            echo "Git clone failed after $MAX_RETRIES attempts."
+            exit 1
+          fi
+      volumeMounts:
+      - name: workdir
+        mountPath: /mnt/workspace
+    
+      env:
+        - name: GITHUB_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: github-token-secret
+              key: token
+
+
+  - name: kaniko-grafana
+    container:
+      image: gcr.io/kaniko-project/executor:latest
+      args:
+        - --dockerfile=/mnt/workspace/src/serving/grafana/Dockerfile
+        - --context=/mnt/workspace/src/serving
+        - --destination=registry.kube-system.svc.cluster.local:5000/grafana-deeptrust:latest
+        - --insecure
+      volumeMounts:
+        - name: workdir
+          mountPath: /mnt/workspace
+
+  - name: kaniko-flask
+    container:
+      image: gcr.io/kaniko-project/executor:latest
+      args:
+        - --dockerfile=/mnt/workspace/src/serving/ui_service/Dockerfile
+        - --context=/mnt/workspace/src/serving/ui_service
+        - --destination=registry.kube-system.svc.cluster.local:5000/flask-deeptrust:latest
+        - --insecure
+      volumeMounts:
+        - name: workdir
+          mountPath: /mnt/workspace
+  - name: kaniko-prometheus
+    container:
+      image: gcr.io/kaniko-project/executor:latest
+      args:
+        - --dockerfile=/mnt/workspace/src/serving/prometheus/Dockerfile
+        - --context=/mnt/workspace/src/serving/
+        - --destination=registry.kube-system.svc.cluster.local:5000/prometheus-deeptrust:latest
+        - --insecure
+      volumeMounts:
+        - name: workdir
+          mountPath: /mnt/workspace
+              

@@ -2,21 +2,24 @@
 apiVersion: v1
 kind: PersistentVolume
 metadata:
-  name: block-storage-pv
+  name: minio-local-pv
 spec:
-  volumeMode: Filesystem
-  storageClassName: all-block-storage
-  hostPath:
-    path: /mnt/block 
-    type: Directory
-  nodeAffinity:     # Use nodeAffinity to ensure it will only be mounted on the node with blockStorage.
+  capacity:
+    storage: 5Gi
+  accessModes:
+  - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: local-storage
+  local:
+    path: /mnt/block1/
+  nodeAffinity:
     required:
       nodeSelectorTerms:
       - matchExpressions:
         - key: kubernetes.io/hostname
           operator: In
           values:
-          - node1  
+          - node1  # Replace with actual Node1 hostname
 ---
 apiVersion: v1
 kind: PersistentVolumeClaim
@@ -24,13 +27,14 @@ metadata:
   name: minio-pvc
   namespace: deeptrust-platform
 spec:
+  storageClassName: local-storage
   accessModes:
     - ReadWriteOnce
   resources:
     requests:
       storage: 5Gi
-  storageClassName: all-block-storage   
 ---
+
 apiVersion: apps/v1
 kind: Deployment
 metadata:

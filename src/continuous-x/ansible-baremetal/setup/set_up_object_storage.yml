@@ -1,0 +1,77 @@
+---
+- name: Configure RClone Confs
+  hosts: node1,node2
+  become: yes
+  tasks:
+    - name: Install Rclone
+      shell: |
+        curl https://rclone.org/install.sh | sudo bash
+    - name: Ensure RClone availability to other docker containers
+      shell: |
+        sudo sed -i '/^#user_allow_other/s/^#//' /etc/fuse.conf  
+    - name: Create RClone configs
+      shell: |
+        mkdir -p ~/.config/rclone     
+    - name: Change RClone confs I
+      shell: |
+        sed -i 's/'"YOUR_USER_ID"'/'"<INSERTUSERID>"'/g' /tmp/deeptrust/src/data-persist/rclone.conf
+    - name: Change RClone confs II
+      shell: |
+        sed -i 's/'"APP_CRED_ID"'/'"<INSERTAPPCRED>"'/g' /tmp/deeptrust/src/data-persist/rclone.conf
+    - name: Change RClone confs III
+      shell: |
+        sed -i 's/'"APP_CRED_SECRET"'/'"<INSERTAPPCREDSEC>"'/g' /tmp/deeptrust/src/data-persist/rclone.conf   
+    - name: Move RClone confs
+      shell: |
+        mv /tmp/deeptrust/src/data-persist/rclone.conf   ~/.config/rclone/     
+    - name: Set Env Variable
+      shell: |
+       export RCLONE_CONTAINER=object-persist-project3                             
+
+- name: LoadData into Object Storage
+  hosts: node1
+  become: yes
+  tasks:
+    - name: Run Extract Data Stage For Regnet
+      shell: |
+        docker compose -f /tmp/deeptrust/src/data-persist/docker-regnet-data-persist.yaml run extract-data  
+    - name: Run Sanitise Data Stage For Regnet
+      shell: |
+        docker compose -f /tmp/deeptrust/src/data-persist/docker-regnet-data-persist.yaml run sanitise-data  
+    - name: Run Transform Data Stage For Regnet
+      shell: |
+        docker compose -f /tmp/deeptrust/src/data-persist/docker-regnet-data-persist.yaml run tranform-data  
+    - name: Run Load Data Stage For Regnet
+      shell: |
+        docker compose -f /tmp/deeptrust/src/data-persist/docker-regnet-data-persist.yaml run load-data
+    - name: Run Extract Data Stage For Blip
+      shell: |
+        docker compose -f /tmp/deeptrust/src/data-persist/docker-blip-data-persist.yaml run extract-data  
+    - name: Run Sanitise Data Stage For Blip
+      shell: |
+        docker compose -f /tmp/deeptrust/src/data-persist/docker-blip-data-persist.yaml run sanitise-data  
+    - name: Run Transform Data Stage For Blip
+      shell: |
+        docker compose -f /tmp/deeptrust/src/data-persist/docker-blip-data-persist.yaml run tranform-data  
+    - name: Run Load Data Stage For Blip
+      shell: |
+        docker compose -f /tmp/deeptrust/src/data-persist/docker-blip-data-persist.yaml run load-data    
+
+- name: Mount Object Storage
+  hosts: node1,node2
+  become: yes
+  tasks:
+    - name: Create mount directory
+      shell: |
+        sudo mkdir -p /mnt/object
+    - name: Change ownership permissions
+      shell: |
+        sudo chown -R cc /mnt/object
+    - name: Change group permissions
+      shell: |
+        sudo chgrp -R cc /mnt/object
+    - name: Mount
+      shell: |
+        rclone mount chi_tacc:object-persist-project3 /mnt/object --read-only --allow-other --daemon
+   
+

@@ -139,3 +139,35 @@ services:
         rm -rf train.csv
         echo "Listing contents of /data/AiVsHuman after transform stage:"
         ls -l /data/AiVsHuman        
+
+
+load-data:
+    container_name: etl_transform_data
+    image: python:3.11
+    volumes:
+      - Project3Data:/data
+      - ~/.config/rclone/rclone.conf:/root/.config/rclone/rclone.conf:ro
+    environment:
+      - train_split=0.7
+      - validation_split=0.1
+    entrypoint: /bin/sh
+    command:
+      - -c
+      - |
+        if [ -z "$RCLONE_CONTAINER" ]; then
+          echo "ERROR: RCLONE_CONTAINER is not set"
+          exit 1
+        fi
+        echo "Cleaning up existing contents of container..."
+        rclone delete chi_tacc:$RCLONE_CONTAINER --rmdirs || true
+
+        echo "Copying data to container..."
+        rclone copy /data/AiVsHuman chi_tacc:$RCLONE_CONTAINER \
+        --progress \
+        --transfers=32 \
+        --checkers=16 \
+        --multi-thread-streams=4 \
+        --fast-list
+
+        echo "Listing directories in container after load stage:"
+        rclone lsd chi_tacc:$RCLONE_CONTAINER

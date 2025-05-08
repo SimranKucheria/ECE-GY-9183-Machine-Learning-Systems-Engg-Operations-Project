@@ -33,7 +33,8 @@ resource "openstack_networking_port_v2" "sharednet1_ports" {
       data.openstack_networking_secgroup_v2.allow_8080.id,
       data.openstack_networking_secgroup_v2.allow_8081.id,
       data.openstack_networking_secgroup_v2.allow_http_80.id,
-      data.openstack_networking_secgroup_v2.allow_9090.id
+      data.openstack_networking_secgroup_v2.allow_9090.id,
+      data.openstack_networking_secgroup_v2.allow_3000.id
     ]
 }
 
@@ -65,4 +66,16 @@ resource "openstack_networking_floatingip_v2" "floating_ip" {
   pool        = "public"
   description = "MLOps IP for ${var.suffix}"
   port_id     = openstack_networking_port_v2.sharednet1_ports["node1"].id
+}
+
+resource "openstack_blockstorage_volume_v3" "volume_1" {
+  region      = "RegionOne"
+  name        = "block-persist-${var.suffix}"
+  description = "Block Storage for Project 3"
+  size        = 50
+}
+
+resource "openstack_compute_volume_attach_v2" "va_1" {
+  instance_id = openstack_compute_instance_v2.nodes["node1"].id
+  volume_id   = openstack_blockstorage_volume_v3.volume_1.id
 }

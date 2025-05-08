@@ -9,12 +9,6 @@ COPY grafana/dashboards/ /var/lib/grafana/dashboards
 COPY grafana/provisioning/dashboards/ /etc/grafana/provisioning/dashboards
 COPY grafana/provisioning/datasources/ /etc/grafana/provisioning/datasources
 
-# Set ownership to Grafana user
-RUN chown -R grafana:grafana /etc/grafana/provisioning/dashboards /etc/grafana/provisioning/datasources
-
-# Switch back to the Grafana user
-USER grafana
-
 # Expose Grafana's default port
 EXPOSE 3000
 

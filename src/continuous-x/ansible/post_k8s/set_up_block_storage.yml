@@ -1,0 +1,44 @@
+---
+- name: Partition Block Storage
+  hosts: node1
+  become: yes
+  tasks:
+    - name: Partition mount
+      shell: |
+        sudo parted -s /dev/vdb mklabel gpt
+    - name: Set up 1st partition
+      shell: |
+        sudo parted -s /dev/vdb mkpart primary ext4 0% 50% 
+    - name: Set up 2nd partition
+      shell: |
+        sudo parted -s /dev/vdb mkpart primary ext4 50% 100%    
+    - name: Make 1st partition
+      shell: |
+        sudo mkfs.ext4 /dev/vdb1
+    - name: Make 2nd partition
+      shell: |
+        sudo mkfs.ext4 /dev/vdb2     
+    - name: Make 1st mount point
+      shell: |
+        sudo mkdir -p /mnt/block1
+    - name: Make 2nd mount point
+      shell: |
+        sudo mkdir -p /mnt/block2   
+    - name: Mount 1st partition
+      shell: |
+        sudo mount /dev/vdb1 /mnt/block1
+    - name: Mount 2nd partition
+      shell: |
+        sudo mount /dev/vdb2 /mnt/block2    
+    - name: Change permissions for block1
+      shell: |
+        sudo chown -R cc /mnt/block1
+    - name: Change permissions for block2
+      shell: |
+        sudo chown -R cc /mnt/block2    
+    - name: Change group permissions for block1
+      shell: |
+        sudo chgrp -R cc /mnt/block1
+    - name: Change group permissions for block2
+      shell: |
+        sudo chgrp -R cc /mnt/block2      
