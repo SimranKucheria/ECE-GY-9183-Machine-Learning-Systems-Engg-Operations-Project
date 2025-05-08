@@ -59,7 +59,6 @@ resource "openstack_compute_floatingip_associate_v2" "fip_2" {
 }
 
 resource "openstack_objectstorage_container_v1" "container_1" {
-  region = "RegionOne"
   name   = "object-persist-${var.suffix}"
 
   metadata = {

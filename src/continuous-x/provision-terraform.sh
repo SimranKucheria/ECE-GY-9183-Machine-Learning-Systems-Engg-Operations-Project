@@ -21,10 +21,10 @@ TACC_FIP2=$(terraform output -raw floating_ip_out2)
 var1="A.B.C.D"
 sed -i 's/'"$var1"'/'"$KVM_FIP"'/g' /work/deeptrust/src/continuous-x/ansible.cfg
 
-sed -i 's/'"$var1"'/'$TACC_FIP1'/g' /work/deeptrust/src/continuous-x/ansible/ansible-baremetal/inventory.yaml
+sed -i 's/'"$var1"'/'$TACC_FIP1'/g' /work/deeptrust/src/continuous-x/ansible-baremetal/inventory.yml
 
 var2="E.F.G.H"
-sed -i 's/'"$var2"'/'$TACC_FIP2'/g' /work/deeptrust/src/continuous-x/ansible/ansible-baremetal/inventory.yaml
+sed -i 's/'"$var2"'/'$TACC_FIP2'/g' /work/deeptrust/src/continuous-x/ansible-baremetal/inventory.yml
 
 echo export KVM_FIP="${KVM_FIP}" >> ~/.bashrc
 echo export TACC_FIP1="${TACC_FIP1}" >> ~/.bashrc

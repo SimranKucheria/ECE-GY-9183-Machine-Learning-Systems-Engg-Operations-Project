@@ -14,19 +14,19 @@
         mkdir -p ~/.config/rclone     
     - name: Change RClone confs I
       shell: |
-        sed -i 's/'"YOUR_USER_ID"'/'"<INSERTUSERID>"'/g' /tmp/deeptrust/src/data-persist/rclone.conf
+        sed -i 's/'"YOUR_USER_ID"'/'<INSERTUSERID>'/g' /tmp/deeptrust/src/data-persist/rclone.conf
     - name: Change RClone confs II
       shell: |
         sed -i 's/'"APP_CRED_ID"'/'"<INSERTAPPCRED>"'/g' /tmp/deeptrust/src/data-persist/rclone.conf
     - name: Change RClone confs III
       shell: |
-        sed -i 's/'"APP_CRED_SECRET"'/'"<INSERTAPPCREDSEC>"'/g' /tmp/deeptrust/src/data-persist/rclone.conf   
-    - name: Move RClone confs
-      shell: |
-        mv /tmp/deeptrust/src/data-persist/rclone.conf   ~/.config/rclone/     
-    - name: Set Env Variable
-      shell: |
-       export RCLONE_CONTAINER=object-persist-project3                             
+        sed -i 's/'"APP_CRED_SECRET"'/'<INSERTAPPCREDSEC>'/g' /tmp/deeptrust/src/data-persist/rclone.conf   
+    
+    - name: Copy a RClone confs file on the remote machine for editing
+      ansible.builtin.copy:
+        src: /tmp/deeptrust/src/data-persist/rclone.conf
+        dest: /home/cc/.config/rclone/
+        remote_src: yes                               
 
 - name: LoadData into Object Storage
   hosts: node1
@@ -40,7 +40,7 @@
         docker compose -f /tmp/deeptrust/src/data-persist/docker-regnet-data-persist.yaml run sanitise-data  
     - name: Run Transform Data Stage For Regnet
       shell: |
-        docker compose -f /tmp/deeptrust/src/data-persist/docker-regnet-data-persist.yaml run tranform-data  
+        docker compose -f /tmp/deeptrust/src/data-persist/docker-regnet-data-persist.yaml run transform-data  
     - name: Run Load Data Stage For Regnet
       shell: |
         docker compose -f /tmp/deeptrust/src/data-persist/docker-regnet-data-persist.yaml run load-data
