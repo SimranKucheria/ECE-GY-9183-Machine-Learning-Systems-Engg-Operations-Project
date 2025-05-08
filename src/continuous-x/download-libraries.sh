@@ -8,5 +8,4 @@ rm terraform_1.10.5_linux_amd64.zip
 
 cp clouds.yaml /work/deeptrust/src/continuous-x/tf/kvm/clouds.yaml
 cp clouds.yaml /work/deeptrust/src/continuous-x/tf/tacc/clouds.yaml
-cp clouds.yaml /work/deeptrust/src/continuous-x/tf/uc/clouds.yaml
 

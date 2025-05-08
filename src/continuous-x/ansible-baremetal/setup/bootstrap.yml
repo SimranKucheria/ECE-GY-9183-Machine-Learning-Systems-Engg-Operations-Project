@@ -27,7 +27,9 @@
         dest: "{{ repo_dest }}"
         version: main   
     - name: Download docker
-      command: curl -sSL https://get.docker.com/ | sudo sh   
+      shell: |
+       curl -sSL https://get.docker.com/ | sudo sh   
 
     - name: Download docker
-      command: sudo groupadd -f docker; sudo usermod -aG docker $USER"
+      shell: |
+       sudo groupadd -f docker; sudo usermod -aG docker $USER"
