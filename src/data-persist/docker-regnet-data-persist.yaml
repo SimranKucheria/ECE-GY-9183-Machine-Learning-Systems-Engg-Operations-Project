@@ -110,6 +110,7 @@ services:
         from sklearn.model_selection import train_test_split
         import pandas as pd
         import os
+        import json
 
         dataset_base_dir = "/data/AiVsHuman"
 
@@ -126,16 +127,22 @@ services:
         x_val, x_test, y_val, y_test = train_test_split(df["file_name"], df["label"], test_size=float(1-valid_split), random_state=42,stratify= df["label"])
         train_df = pd.concat([x_train , y_train], axis = 1)
         valid_df = pd.concat([x_val , y_val], axis = 1)
+        new_df = pd.concat([x_test,y_test], axis=1)
+
+        x_test, x_test_online, y_test, y_test_online = train_test_split(new_df["file_name"], new_df["label"], test_size=0.5, random_state=42, stratify= new_df["label"])
+        
         test_df = pd.concat([x_test,y_test], axis=1)
+        test_online_df = pd.concat([x_test_online,y_test_online], axis=1)
         train_df.to_csv("training.csv",index=False)
         valid_df.to_csv("validation.csv",index=False)
         test_df.to_csv("testing.csv",index=False)
+        test_online_df.to_csv("testing_online.csv",index=False)
         print(len(train_df))
         print(len(valid_df))
         print(len(test_df))
+        print(len(test_online_df))
         '
         
-        
-        rm -rf train.csv
+        rm train.csv
         echo "Listing contents of /data/AiVsHuman after transform stage:"
-        ls -l /data/AiVsHuman        
+        ls -l /data/AiVsHuman
