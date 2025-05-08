@@ -57,25 +57,6 @@ services:
               capabilities: [gpu]
     ipc: host
 
-  flask:
-    build:
-      context: ./ui_service  # path to Flask UI code
-      dockerfile: Dockerfile
-    container_name: flask
-    ports:
-      - "80:5000"
-    environment:
-      - FASTAPI_SERVER_URL=http://fastapi_server:8000 
-      - TRITON_SERVER_URL=triton_server:8000
-      - MINIO_URL=http://minio:9000
-      - MINIO_USER=your-access-key
-      - MINIO_PASSWORD=your-secret-key
-    networks:
-      - production_net
-    depends_on:
-      - fastapi_server
-      - minio
-
   jupyter:
     image: quay.io/jupyter/minimal-notebook:latest
     container_name: jupyter
@@ -85,15 +66,4 @@ services:
       - /home/cc/ECE-GY-9183-Machine-Learning-Systems-Engg-Operations-Project/src/serving/workspace:/home/jovyan/work
     command: >
       bash -c "python3 -m pip install numpy && start-notebook.sh"
-
-
-
-
-
-networks:
-  production_net:
-    external: true
-
-volumes:
-  minio_data:
 
