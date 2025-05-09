@@ -1,45 +1,45 @@
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: flask
-  namespace: deeptrust-platform
-spec:
-  replicas: 1
-  selector:
-    matchLabels:
-      app: flask
-  template:
-    metadata:
-      labels:
-        app: flask
-    spec:
-      containers:
-      - name: flask
-        image: registry.kube-system.svc.cluster.local:5000/flask-deeptrust:latest # Replace with the built image
-        ports:
-        - containerPort: 5000
-        env:
-        - name: FASTAPI_SERVER_URL
-          value: "http://{{.Values.fastapi.externalIP}}:8000"
-        - name: MINIO_URL
-          value: "http://minio:9000"
-        - name: MINIO_USER
-          value: "your-access-key"
-        - name: MINIO_PASSWORD
-          value: "your-secret-key"
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: flask
-  namespace: deeptrust-platform
-spec:
-  selector:
-    app: flask
+# apiVersion: apps/v1
+# kind: Deployment
+# metadata:
+#   name: flask
+#   namespace: deeptrust-platform
+# spec:
+#   replicas: 1
+#   selector:
+#     matchLabels:
+#       app: flask
+#   template:
+#     metadata:
+#       labels:
+#         app: flask
+#     spec:
+#       containers:
+#       - name: flask
+#         image: registry.kube-system.svc.cluster.local:5000/flask-deeptrust:latest # Replace with the built image
+#         ports:
+#         - containerPort: 5000
+#         env:
+#         - name: FASTAPI_SERVER_URL
+#           value: "http://{{.Values.fastapi.externalIP}}:{{.Values.fastapi.port}}"
+#         - name: MINIO_URL
+#           value: "http://minio:9000"
+#         - name: MINIO_USER
+#           value: "your-access-key"
+#         - name: MINIO_PASSWORD
+#           value: "your-secret-key"
+# ---
+# apiVersion: v1
+# kind: Service
+# metadata:
+#   name: flask
+#   namespace: deeptrust-platform
+# spec:
+#   selector:
+#     app: flask
   
-  ports:
-  - port: 80
-    targetPort: 5000
-  externalIPs:
-    - {{ .Values.flask.externalIP }}    
+#   ports:
+#   - port: 80
+#     targetPort: 5000
+#   externalIPs:
+#     - {{ .Values.flask.externalIP }}    
   

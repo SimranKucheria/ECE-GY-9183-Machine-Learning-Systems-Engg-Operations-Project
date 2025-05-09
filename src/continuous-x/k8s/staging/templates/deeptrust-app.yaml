@@ -19,6 +19,21 @@ spec:
           image: {{ .Values.image.repository }}:{{ .Values.image.tag }}
           ports:
             - containerPort: 8000
+          env:
+            - name: FASTAPI_SERVER_URL
+              value: "http://{{.Values.fastapi.externalIP}}:{{.Values.fastapi.port}}"
+            - name: MINIO_URL
+              value: "http://minio:9000"
+            - name: MINIO_USER
+              value: "your-access-key"
+            - name: MINIO_PASSWORD
+              value: "your-secret-key"    
+            - name: TRITON_SERVER_URL
+              value: "http://{{.Values.fastapi.externalIP}}:{{.Values.triton.port}}"
+            - name: VLLM_SERVER_URL
+              value: "http://{{.Values.fastapi.externalIP}}:{{.Values.vllm.port}}"  
+               
+
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
 ---

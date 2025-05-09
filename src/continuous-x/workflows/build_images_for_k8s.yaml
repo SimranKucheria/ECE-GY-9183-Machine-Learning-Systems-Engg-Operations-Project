@@ -19,9 +19,7 @@ spec:
       - - name: clone-repo
           template: git-clone
       - - name: kaniko-build-grafana
-          template: kaniko-grafana
-      - - name: kaniko-build-flask
-          template: kaniko-flask    
+          template: kaniko-grafana 
       - - name: kaniko-build-prometheus
           template: kaniko-prometheus        
 
@@ -70,17 +68,6 @@ spec:
         - name: workdir
           mountPath: /mnt/workspace
 
-  - name: kaniko-flask
-    container:
-      image: gcr.io/kaniko-project/executor:latest
-      args:
-        - --dockerfile=/mnt/workspace/src/serving/ui_service/Dockerfile
-        - --context=/mnt/workspace/src/serving/ui_service
-        - --destination=registry.kube-system.svc.cluster.local:5000/flask-deeptrust:latest
-        - --insecure
-      volumeMounts:
-        - name: workdir
-          mountPath: /mnt/workspace
   - name: kaniko-prometheus
     container:
       image: gcr.io/kaniko-project/executor:latest

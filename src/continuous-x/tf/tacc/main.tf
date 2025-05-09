@@ -1,6 +1,6 @@
 resource "openstack_compute_instance_v2" "node1" {
     name = "node1-mlops-${var.suffix}"
-    image_name = "CC-Ubuntu20.04"
+    image_name = "CC-Ubuntu20.04-CUDA"
     flavor_name = "baremetal"
     key_pair = var.key
     network {
@@ -30,7 +30,7 @@ resource "openstack_compute_floatingip_associate_v2" "fip_1" {
 
 resource "openstack_compute_instance_v2" "node2" {
     name = "node2-mlops-${var.suffix}"
-    image_name = "CC-Ubuntu20.04"
+    image_name = "CC-Ubuntu20.04-CUDA"
     flavor_name = "baremetal"
     key_pair = var.key
     network {

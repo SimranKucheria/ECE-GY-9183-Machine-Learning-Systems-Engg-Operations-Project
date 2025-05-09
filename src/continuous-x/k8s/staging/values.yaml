@@ -5,7 +5,7 @@ image:
   tag: staging-1.0.0
 
 service:
-  port: 80
+  port: 8081
   externalIP: ""   # Placeholder
 
 resources:
@@ -15,3 +15,13 @@ resources:
   requests:
     cpu: "200m"
     memory: "128Mi"
+
+fastapi:
+  externalIP: ""  
+  port: 8100  
+
+triton:
+  port: 8110
+
+vllm:
+  port: 8105       

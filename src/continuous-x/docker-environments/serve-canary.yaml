@@ -1,0 +1,32 @@
+name: deeptrust_serve-canary
+services:
+  fastapi_server:
+    extends:
+      file: ../serve/docker-compose-serve.yaml
+      service: fastapi_server
+    ports:
+      - "8200:8000"  # for HTTP requests
+
+  triton_server:
+    extends:
+      file: ../serve/docker-compose-serve.yaml
+      service: triton_server
+    ports:
+      - "8210:8010"  # for HTTP requests
+      - "8201:8001"  # for GRPC requests
+      - "8202:8002"  # for reporting metrics
+
+  vllm:
+    extends:
+      file: ../serve/docker-compose-serve.yaml
+      service: vllm
+    ports:
+      - "8205:8000"  # for HTTP requests  
+
+  jupyter:
+    extends:
+      file: ../serve/docker-compose-serve.yaml
+      service: vllm
+    ports:
+      - "8288:8888"  # for HTTP requests 
+

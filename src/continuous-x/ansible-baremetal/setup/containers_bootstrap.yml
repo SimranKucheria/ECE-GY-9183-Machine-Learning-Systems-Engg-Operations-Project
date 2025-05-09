@@ -13,8 +13,18 @@
   become: yes
   tasks:
     tasks:
-    - name: Install Training Containers
+    - name: Install Serving Containers Canary
       shell: |
-        docker compose -f /tmp/deeptrust/src/serving/docker-compose-serve.yaml up -d    
+        docker compose -f /tmp/deeptrust/src/continuous-x/docker-environments/serve-canary.yaml up -d    
       environment:
-            FLOATING_IP: "A.B.C.D"              
+            FLOATING_IP: "A.B.C.D"        
+    - name: Install Serving Containers Staging
+      shell: |
+        docker compose -f /tmp/deeptrust/src/continuous-x/docker-environments/serve-staging.yaml up -d 
+      environment:
+            FLOATING_IP: "A.B.C.D"        
+    - name: Install Serving Containers Production
+      shell: |
+        docker compose -f /tmp/deeptrust/src/continuous-x/docker-environments/serve-production.yaml up -d     
+      environment:
+            FLOATING_IP: "A.B.C.D"                              

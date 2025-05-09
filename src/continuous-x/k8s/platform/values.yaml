@@ -9,12 +9,7 @@ labelstudio:
 
 grafana:
   externalIP: "0.0.0.0"  
-
-flask:
-  externalIP: "0.0.0.0"   
-
+  
 prometheus:
   externalIP: "0.0.0.0"      
-
-fastapi:
-  externalIP: "0.0.0.0"    
+  
