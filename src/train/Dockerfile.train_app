@@ -1,0 +1,32 @@
+FROM python:3.10-slim
+
+WORKDIR /app
+
+# Install system dependencies (if needed)
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copy everything from the current directory (train/) into /app in the container
+COPY . /app
+
+# Install Python dependencies
+RUN pip install --pre --no-cache-dir \
+    lightning \
+    pynvml \
+    mlflow \
+    transformers==4.16.0 \
+    opencv-python \
+    timm \
+    fairscale \
+    pycocoevalcap \
+    pycocotools \
+    ruamel_yaml==0.16.6 \
+    ray \
+    fastapi \
+    "uvicorn[standard]"
+
+EXPOSE 8005
+
+# Start FastAPI server (app.py must contain app = FastAPI())
+CMD ["uvicorn", "app:app", "--host", "0.0.0.0", "--port", "8005"]

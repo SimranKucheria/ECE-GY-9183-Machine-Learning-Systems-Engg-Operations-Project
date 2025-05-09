@@ -1,0 +1,9 @@
+torch
+torchvision
+lightning
+ray
+transformers
+scikit-learn
+numpy
+mlflow
+pandas
