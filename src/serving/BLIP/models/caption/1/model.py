@@ -13,7 +13,7 @@ class TritonPythonModel:
     
     def initialize(self, args):
         model_dir = os.path.dirname(__file__)
-        model_path = os.path.join(model_dir, "model_base_capfilt_large.pth")
+        model_path = os.path.join(model_dir, "model_base_caption_capfilt_large.pth")
         
         instance_kind = args.get("model_instance_kind", "cpu").lower()
         if instance_kind == "gpu":
