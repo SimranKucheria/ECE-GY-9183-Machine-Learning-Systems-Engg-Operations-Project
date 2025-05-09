@@ -20,17 +20,13 @@ TACC_FIP2=$(terraform output -raw floating_ip_out2)
 
 var1="A.B.C.D"
 sed -i 's/'"$var1"'/'"$KVM_FIP"'/g' /work/deeptrust/src/continuous-x/ansible.cfg
-sed -i 's/'<FIP>'/'"$KVM_FIP"'/g' /work/deeptrust/src/continuous-x/ansible-baremetal/containers_bootstrap.yml
+sed -i 's/'"$var1"'/'$KVM_FIP'/g' /work/deeptrust/src/continuous-x/ansible-baremetal/setup/containers_bootstrap.yml
 
 sed -i 's/'"$var1"'/'$TACC_FIP1'/g' /work/deeptrust/src/continuous-x/ansible-baremetal/inventory.yml
-sed -i 's/'<FIP>'/'"$TACC_FIP"'/g' /work/deeptrust/src/continuous-x/argocd/argocd_update_floatingip.yml
+sed -i 's/'"$var1"'/'$TACC_FIP1'/g' /work/deeptrust/src/continuous-x/argocd/argocd_update_floatingip.yml
 
 var2="E.F.G.H"
 sed -i 's/'"$var2"'/'$TACC_FIP2'/g' /work/deeptrust/src/continuous-x/ansible-baremetal/inventory.yml
-
-echo export KVM_FIP="${KVM_FIP}" >> ~/.bashrc
-echo export TACC_FIP1="${TACC_FIP1}" >> ~/.bashrc
-echo export TACC_FIP2="${TACC_FIP2}" >> ~/.bashrc
 
 cp /work/deeptrust/src/continuous-x/ansible.cfg /work/deeptrust/src/continuous-x/ansible/ansible.cfg
      

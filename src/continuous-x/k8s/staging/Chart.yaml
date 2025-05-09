@@ -1,0 +1,4 @@
+apiVersion: v2
+name: deeptrust-staging
+version: 1.0.0
+description: Deeptrust Staging Deployment

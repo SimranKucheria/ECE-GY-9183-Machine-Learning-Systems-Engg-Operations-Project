@@ -1,0 +1,4 @@
+apiVersion: v2
+name: deeptrust-canary
+version: 1.0.0
+description: Deeptrust Canary Deployment

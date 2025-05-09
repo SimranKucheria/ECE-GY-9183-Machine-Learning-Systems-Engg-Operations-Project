@@ -3,15 +3,11 @@
   hosts: node1
   become: yes
   tasks:
-    - name: Get Floating IP
-        command: >
-           echo $KVM_FIP
-        register: ip
     - name: Install Training Containers
       shell: |
         docker compose -f /tmp/deeptrust/src/train/train-infrastructure.yaml up -d 
       environment:
-            FLOATING_IP: <FIP>
+            FLOATING_IP: "A.B.C.D"
 - name: Configure Serving Node
   hosts: node2
   become: yes
@@ -21,4 +17,4 @@
       shell: |
         docker compose -f /tmp/deeptrust/src/serving/docker-compose-serve.yaml up -d    
       environment:
-            FLOATING_IP: <FIP>              
+            FLOATING_IP: "A.B.C.D"              

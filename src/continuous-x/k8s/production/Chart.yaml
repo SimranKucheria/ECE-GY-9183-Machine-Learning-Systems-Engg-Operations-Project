@@ -1,0 +1,4 @@
+apiVersion: v2
+name: deeptrust-production
+version: 1.0.0
+description: Deeptrust Production Deployment

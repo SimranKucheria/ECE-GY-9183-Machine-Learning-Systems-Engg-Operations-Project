@@ -57,7 +57,7 @@
         --sync-policy automated --self-heal
       register: app_create
       environment:
-            floating_ip: <FIP>    
+            floating_ip: "A.B.C.D" 
 
     - name: Update ArgoCD Helm application if it exists
       when: app_check.rc == 0
@@ -74,5 +74,5 @@
         --port-forward --port-forward-namespace=argocd
       register: app_update
       environment:
-            floating_ip: <FIP>    
+            floating_ip: "A.B.C.D" 
   

@@ -29,7 +29,7 @@ resource "openstack_compute_floatingip_associate_v2" "fip_1" {
 }
 
 resource "openstack_compute_instance_v2" "node2" {
-    name = "node-mlops-${var.suffix}"
+    name = "node2-mlops-${var.suffix}"
     image_name = "CC-Ubuntu20.04"
     flavor_name = "baremetal"
     key_pair = var.key
@@ -55,7 +55,7 @@ resource "openstack_networking_floatingip_v2" "floating_ip2" {
 
 resource "openstack_compute_floatingip_associate_v2" "fip_2" {
     floating_ip = openstack_networking_floatingip_v2.floating_ip2.address
-    instance_id = openstack_compute_instance_v2.node1.id
+    instance_id = openstack_compute_instance_v2.node2.id
 }
 
 resource "openstack_objectstorage_container_v1" "container_1" {

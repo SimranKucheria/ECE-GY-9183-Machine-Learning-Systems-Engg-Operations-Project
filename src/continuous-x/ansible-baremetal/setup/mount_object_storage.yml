@@ -25,13 +25,16 @@
     - name: Copy a RClone confs file on the remote machine for editing
       ansible.builtin.copy:
         src: /tmp/deeptrust/src/data-persist/rclone.conf
-        dest: /home/cc/.config/rclone/
+        dest: /root/.config/rclone/
         remote_src: yes                   
 
 - name: Mount Object Storage
   hosts: node1,node2
   become: yes
   tasks:
+    - name: Install fusermount
+      shell: |
+        sudo apt -y install fuse3
     - name: Create mount directory
       shell: |
         sudo mkdir -p /mnt/object
