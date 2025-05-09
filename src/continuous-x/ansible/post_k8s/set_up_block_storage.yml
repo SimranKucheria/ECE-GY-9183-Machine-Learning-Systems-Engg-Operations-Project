@@ -23,7 +23,10 @@
         sudo mkdir -p /mnt/block1
     - name: Make 2nd mount point
       shell: |
-        sudo mkdir -p /mnt/block2   
+        sudo mkdir -p /mnt/block2  
+    - name: Make postgres dirctory
+      shell: |
+        sudo mkdir -p /mnt/block1/postgres     
     - name: Mount 1st partition
       shell: |
         sudo mount /dev/vdb1 /mnt/block1
