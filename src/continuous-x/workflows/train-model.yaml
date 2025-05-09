@@ -94,6 +94,7 @@ spec:
     inputs:
       parameters:
       - name: model-version
+      - name: endpoint-ip 
     resource:
       action: create
       manifest: |
