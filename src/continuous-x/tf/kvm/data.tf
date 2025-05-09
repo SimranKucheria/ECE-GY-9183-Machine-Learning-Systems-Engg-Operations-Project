@@ -38,4 +38,8 @@ data "openstack_networking_secgroup_v2" "allow_3000" {
   name = "allow-3000"
 }
 
+data "openstack_networking_secgroup_v2" "allow_9000" {
+  name = "allow-9000"
+}
+
 
