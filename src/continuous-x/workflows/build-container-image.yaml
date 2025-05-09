@@ -1,0 +1,191 @@
+apiVersion: argoproj.io/v1alpha1
+kind: WorkflowTemplate
+metadata:
+  name: build-container-image
+spec:
+  entrypoint: reload-model
+  arguments:
+    parameters:
+    - name: model-version
+     parameters:
+    - name: endpoint-ip
+
+  volumeClaimTemplates:
+  - metadata:
+      name: workdir
+    spec:
+      accessModes: [ "ReadWriteOnce" ]
+      resources:
+        requests:
+          storage: 2Gi
+
+  templates:
+  - name: reload-model
+    steps:
+      - - name: clone-repo
+          template: git-clone
+      - - name: fetch-model
+          template: download-model
+          arguments:
+            parameters:
+            - name: model-version
+              value: "{{workflow.parameters.model-version}}"
+            - name: endpoint-ip
+              value: "{{workflow.parameters.endpoint-ip}}"
+      - - name: kaniko-build
+          template: kaniko
+          arguments:
+            parameters:
+            - name: model-version
+              value: "{{workflow.parameters.model-version}}"
+      - - name: tag-model-staging
+          template: set-mlflow-alias
+          arguments:
+            parameters:
+            - name: model-version
+              value: "{{workflow.parameters.model-version}}"
+      - - name: deploy-to-staging
+          template: trigger-deploy
+          arguments:
+            parameters:
+            - name: model-version
+              value: "{{workflow.parameters.model-version}}"
+            - name: environment
+              value: "staging"
+
+  - name: git-clone
+    container:
+      image: alpine/git
+      command: [sh, -c]
+      args:
+        - |
+          MAX_RETRIES=5
+          i=1
+
+          while [ $i -le $MAX_RETRIES ]; do
+            echo "Attempt $i of $MAX_RETRIES: Cloning repo..."
+            git clone --branch workflow "https://$GITHUB_TOKEN@github.com/SimranKucheria/ECE-GY-9183-Machine-Learning-Systems-Engg-Operations-Project.git" /mnt/workspace && break
+            echo "Git clone failed. Retrying in 5 seconds..."
+            i=$((i + 1))
+            sleep 5
+          done
+
+          if [ ! -d /mnt/workspace/.git ]; then
+            echo "Git clone failed after $MAX_RETRIES attempts."
+            exit 1
+          fi
+      volumeMounts:
+      - name: workdir
+        mountPath: /mnt/workspace
+      env:
+        - name: GITHUB_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: github-token-secret
+              key: token  
+
+  - name: download-model
+    inputs:
+      parameters:
+      - name: model-version
+      - name: endpoint-ip
+    script:
+      image: alpine:3.18
+      command: [sh]
+      source: |
+
+        MAX_RETRIES=5
+        RETRY_DELAY=3
+        i=1
+        INSTALL_SUCCESS=0
+
+        set +e  # allow manual error handling
+
+        # Retry installation
+        while [ $i -le $MAX_RETRIES ]; do
+          echo "[INFO] Attempt $i to install curl and jq..." >&2
+          apk update > /dev/null 2>&1
+          apk add --no-cache curl jq > /dev/null 2>&1
+          STATUS=$?
+          if [ $STATUS -eq 0 ]; then
+            echo "[INFO] Packages installed successfully." >&2
+            INSTALL_SUCCESS=1
+            break
+          fi
+          echo "[WARN] apk add failed (exit $STATUS). Retrying in $RETRY_DELAY seconds..." >&2
+          sleep $RETRY_DELAY
+          i=$((i + 1))
+        done
+
+        set -e  # return to fail-fast mode
+
+        if [ $INSTALL_SUCCESS -ne 1 ]; then
+          echo "[ERROR] Failed to install curl and jq after $MAX_RETRIES attempts." >&2
+          exit 1
+        fi
+
+        # Trigger model Deploy
+        echo "[INFO] Triggering model deploying" >&2
+        RESPONSE=$(curl -f -s -X POST http://{{inputs.parameters.endpoint-ip}}:5100/update_VIT -d '{"model_version":{{inputs.parameters.model-version}} }')
+        CURL_EXIT_CODE=$?
+
+        echo "[INFO] Model Update response was: $RESPONSE" >&2
+
+
+        if [ $CURL_EXIT_CODE -ne 0 ]; then
+          echo "[ERROR] curl failed with code $CURL_EXIT_CODE" >&2
+          exit $CURL_EXIT_CODE
+        fi
+
+
+  - name: kaniko
+    inputs:
+      parameters:
+      - name: model-version
+    container:
+      image: gcr.io/kaniko-project/executor:latest
+      resources:
+        requests:
+          memory: "1500Mi"
+      args:
+        - --dockerfile=/mnt/workspace/src/serving/ui_service/Dockerfile
+        - --context=/mnt/workspace/src/serving/ui_service/
+        - --destination=registry.kube-system.svc.cluster.local:5000/deeptrust-app:staging-1.0.{{inputs.parameters.model-version}}
+        - --insecure
+      volumeMounts:
+      - name: workdir
+        mountPath: /mnt/workspace
+
+  - name: set-mlflow-alias
+    inputs:
+      parameters:
+      - name: model-version
+    script:
+      image: python:3.11-slim
+      command: [sh, -c]
+      source: |
+        pip install mlflow-skinny > /dev/null
+        export MLFLOW_TRACKING_URI=http://mlflow.deeptrust-platform.svc.cluster.local:8000
+        python -c "import mlflow; client = mlflow.tracking.MlflowClient(); client.set_registered_model_alias(name='VITDeeptrustModel', alias='staging', version='{{inputs.parameters.model-version}}')"
+  
+  - name: trigger-deploy
+    inputs:
+      parameters:
+      - name: model-version
+      - name: environment
+    resource:
+      action: create
+      manifest: |
+        apiVersion: argoproj.io/v1alpha1
+        kind: Workflow
+        metadata:
+          generateName: deploy-container-image-
+        spec:
+          workflowTemplateRef:
+            name: deploy-container-image
+          arguments:
+            parameters:
+            - name: environment
+              value: "{{inputs.parameters.environment}}"
+            - name: model-version
+              value: "{{inputs.parameters.model-version}}"

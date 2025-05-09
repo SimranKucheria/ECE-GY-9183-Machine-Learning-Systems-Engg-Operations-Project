@@ -64,3 +64,15 @@ services:
     command: >
       bash -c "python3 -m pip install numpy && start-notebook.sh"
 
+
+  fetcher:
+    build:
+      context: ./fetcher
+      dockerfile: Dockerfile
+    # ports:
+    #   - "5000:5000"
+    volumes:
+      - ./inference_service/:/data/vit
+      - ./BLIP/:/data/blip 
+    restart: always
+

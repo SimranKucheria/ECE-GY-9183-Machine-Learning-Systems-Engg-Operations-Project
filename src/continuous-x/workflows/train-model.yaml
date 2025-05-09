@@ -17,13 +17,15 @@ spec:
             parameters:
             - name: endpoint-ip
               value: "{{workflow.parameters.endpoint-ip}}"
-      # - - name: build-container
-      #     template: trigger-build
-      #     arguments:
-      #       parameters:
-      #       - name: model-version
-      #         value: "{{steps.trigger-training-endpoint.outputs.result}}"
-      #     when: "{{steps.trigger-training-endpoint.outputs.result}} != ''"
+      - - name: rebuild-container
+          template: trigger-build
+          arguments:
+            parameters:
+            - name: model-version
+              value: "{{steps.trigger-training-endpoint.outputs.result}}"
+            - name: endpoint-ip  
+              value: "{{workflow.parameters.endpoint-ip}}"
+          when: "{{steps.trigger-training-endpoint.outputs.result}} != ''"
 
   - name: call-endpoint
     inputs:
@@ -66,7 +68,7 @@ spec:
 
         # Trigger model training
         echo "[INFO] Triggering model training..." >&2
-        RESPONSE=$(curl -f -s -X POST http://{{inputs.parameters.endpoint-ip}}:8005//start-training-vit)
+        RESPONSE=$(curl -f -s -X POST http://{{inputs.parameters.endpoint-ip}}:8005/start-training-vit)
         CURL_EXIT_CODE=$?
 
         echo "[INFO] Training endpoint response was: $RESPONSE" >&2
@@ -87,23 +89,23 @@ spec:
 
         echo -n "$VERSION"
 
-#Just call training model for now, figure out env promotion later
-
-  # - name: trigger-build
-    # inputs:
-    #   parameters:
-    #   - name: model-version
-    # resource:
-    #   action: create
-    #   manifest: |
-    #     apiVersion: argoproj.io/v1alpha1
-    #     kind: Workflow
-    #     metadata:
-    #       generateName: build-container-image
-    #     spec:
-    #       workflowTemplateRef:
-    #         name: build-container-image
-    #       arguments:
-    #         parameters:
-    #         - name: model-version
-    #           value: "{{inputs.parameters.model-version}}"
+  - name: trigger-build
+    inputs:
+      parameters:
+      - name: model-version
+    resource:
+      action: create
+      manifest: |
+        apiVersion: argoproj.io/v1alpha1
+        kind: Workflow
+        metadata:
+          generateName: build-container-image
+        spec:
+          workflowTemplateRef:
+            name: build-container-image
+          arguments:
+            parameters:
+            - name: model-version
+              value: "{{inputs.parameters.model-version}}"
+            - name: endpoint-ip
+              value: "{{inputs.parameters.endpoint-ip}}"  

@@ -2,14 +2,14 @@ name: deeptrust_serve-staging
 services:
   fastapi_server:
     extends:
-      file: ../serve/docker-compose-serve.yaml
+      file: ../serving/docker-compose-serve.yaml
       service: fastapi_server
     ports:
       - "8100:8000"  # for HTTP requests
 
   triton_server:
     extends:
-      file: ../serve/docker-compose-serve.yaml
+      file: ../serving/docker-compose-serve.yaml
       service: triton_server
     ports:
       - "8110:8010"  # for HTTP requests
@@ -18,15 +18,29 @@ services:
 
   vllm:
     extends:
-      file: ../serve/docker-compose-serve.yaml
+      file: ../serving/docker-compose-serve.yaml
       service: vllm
     ports:
       - "8105:8000"  # for HTTP requests  
 
   jupyter:
     extends:
-      file: ../serve/docker-compose-serve.yaml
+      file: ../serving/docker-compose-serve.yaml
       service: vllm
     ports:
       - "8188:8888"  # for HTTP requests 
+
+  fetcher:
+    extends:
+      file: ../serving/docker-compose-serve.yaml
+      service: fetcher
+    ports:
+      - "5100:5000"
+    volumes:
+      - ./inference_service/:/data/vit
+      - ./BLIP/:/data/blip
+    environment:
+      - DOCKER_COMPOSE_DIR=/tmp/deeptrust/src/continuous-x/docker-environments/serve-staging.yaml
+      - MLFLOW_TRACKING_URI=http://${FLOATING_IP}:8000 
+    restart: always   
 
