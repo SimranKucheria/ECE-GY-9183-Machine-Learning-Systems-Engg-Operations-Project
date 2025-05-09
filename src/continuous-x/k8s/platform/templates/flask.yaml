@@ -20,7 +20,7 @@ spec:
         - containerPort: 5000
         env:
         - name: FASTAPI_SERVER_URL
-          value: "http://fastapi-server:8000"
+          value: "http://{{.Values.fastapi.externalIP}}:8000"
         - name: MINIO_URL
           value: "http://minio:9000"
         - name: MINIO_USER

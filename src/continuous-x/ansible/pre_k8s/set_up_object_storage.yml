@@ -52,4 +52,6 @@
         docker compose -f /tmp/deeptrust/src/data-persist/docker-blip-data-persist.yaml run tranform-data  
     - name: Run Load Data Stage For Regnet and Blip
       shell: |
-        docker compose -f /tmp/deeptrust/src/data-persist/docker-load-data-persist.yaml run load-data    
+        docker compose -f /tmp/deeptrust/src/data-persist/docker-load-data-persist.yaml run load-data  
+      environment:
+            RCLONE_CONTAINER: object-persist-project3           
