@@ -3,10 +3,9 @@
   hosts: node1
   become: yes
   vars:
-    app_name: deeptrust-production
+    app_name: "deeptrust-production"
     repo_url:  "https://<TOKEN>@github.com/SimranKucheria/ECE-GY-9183-Machine-Learning-Systems-Engg-Operations-Project.git"
-    app_name: "deeptrust-platform"
-    app_path: src/continuous-x/k8s/production
+    app_path: "src/continuous-x/k8s/production"
     argocd_namespace: argocd
 
   tasks:
