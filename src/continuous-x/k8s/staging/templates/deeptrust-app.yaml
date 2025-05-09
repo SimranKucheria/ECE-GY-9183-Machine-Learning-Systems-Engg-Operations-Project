@@ -18,7 +18,7 @@ spec:
         - name: deeptrust-app
           image: {{ .Values.image.repository }}:{{ .Values.image.tag }}
           ports:
-            - containerPort: 8000
+            - containerPort: 5000
           env:
             - name: FASTAPI_SERVER_URL
               value: "http://{{.Values.fastapi.externalIP}}:{{.Values.fastapi.port}}"
@@ -48,6 +48,6 @@ spec:
     app: deeptrust-app
   ports:
     - port: {{ .Values.service.port }}
-      targetPort: 8000
+      targetPort: 5000
   externalIPs:
     - {{ .Values.service.externalIP }}
