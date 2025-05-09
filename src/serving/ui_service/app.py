@@ -33,6 +33,8 @@ FASTAPI_SERVER_URL = os.environ['FASTAPI_SERVER_URL']  # New: FastAPI server URL
 
 TRITON_SERVER_URL=os.environ['TRITON_SERVER_URL']
 
+VLLM_SERVER_URL=os.environ['VLLM_SERVER_URL']
+
 # for uploading production images to MinIO bucket
 def upload_production_bucket(img_path, preds, confidence, prediction_id):
     classes = np.array(["Human","AI"])
@@ -95,7 +97,7 @@ def request_fastapi(image_path):
 
 def request_triton(image_path):
     try:
-        client = httpclient.InferenceServerClient(url="triton_server:8000")
+        client = httpclient.InferenceServerClient(url=TRITON_SERVER_URL)
         app.logger.info(f"IS TRITON SERVER LIVE: {client.is_server_live()}")
         with open(image_path, "rb") as f:
             image_bytes = f.read() 
@@ -115,15 +117,14 @@ def request_triton(image_path):
     
 def request_vllm(description):
     try:
-        url = "http://192.5.87.164:8005/v1/completions"
         headers = {"Content-Type": "application/json"}
         data = {
             "model": "mistralai/Mistral-7B-Instruct-v0.2",
-            "prompt": "Generate 5 tags for the description: " + description,
+            "prompt": "Generate tags for the description: " + description,
             "max_tokens": 32,
             "temperature": 0.7
         }
-        response = requests.post(url, headers=headers, json=data)
+        response = requests.post(VLLM_SERVER_URL, headers=headers, json=data)
         print(response.json())
     except Exception as e:
         print(f"Error during vLLM inference: {e}")  
