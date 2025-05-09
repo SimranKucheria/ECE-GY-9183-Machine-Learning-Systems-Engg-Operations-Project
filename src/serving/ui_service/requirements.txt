@@ -3,3 +3,4 @@ numpy
 requests
 boto3
 alibi-detect
+tritonclient[http]

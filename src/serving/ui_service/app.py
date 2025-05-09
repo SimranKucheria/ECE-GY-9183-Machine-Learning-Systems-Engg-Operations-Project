@@ -11,6 +11,9 @@ import boto3 # client for s3-compatible object store, including MinIO
 from concurrent.futures import ThreadPoolExecutor  # used for the thread pool that will upload images to MinIO
 executor = ThreadPoolExecutor(max_workers=2)  # can adjust max_workers as needed
 import logging
+import tritonclient.http as httpclient # for making requests to Triton
+from flask import jsonify 
+
 
 # Authenticate to MinIO object store
 s3 = boto3.client(
@@ -27,6 +30,8 @@ os.makedirs(os.path.join(app.instance_path, 'uploads'), exist_ok=True)
 
 FASTAPI_SERVER_URL = os.environ['FASTAPI_SERVER_URL']  # New: FastAPI server URL
 # FASTAPI_SERVER_URL = os.environ.get('FASTAPI_SERVER_URL', 'http://localhost:8000')
+
+TRITON_SERVER_URL=os.environ['TRITON_SERVER_URL']
 
 # for uploading production images to MinIO bucket
 def upload_production_bucket(img_path, preds, confidence, prediction_id):
@@ -81,8 +86,49 @@ def request_fastapi(image_path):
 
     except Exception as e:
         print(f"Error during inference: {e}")  
-        app.logger.error(f"Error during inference: {e}")
+        app.logger.error(f"Error during FastAPI inference: {e}")
+        return None, None 
+
+# # Usage example
+# caption = get_caption("Cat_August_2010-4.jpg")
+# print(f"Generated caption: {caption}")
+
+def request_triton(image_path):
+    try:
+        client = httpclient.InferenceServerClient(url="triton_server:8000")
+        app.logger.info(f"IS TRITON SERVER LIVE: {client.is_server_live()}")
+        with open(image_path, "rb") as f:
+            image_bytes = f.read() 
+        inputs = []
+        inputs.append(httpclient.InferInput("INPUT_IMAGE", [1, 1], "BYTES"))
+        encoded_str =  base64.b64encode(image_bytes).decode("utf-8")
+        input_data = np.array([[encoded_str]], dtype=object)
+        inputs[0].set_data_from_numpy(input_data)
+        outputs = []
+        outputs.append(httpclient.InferRequestedOutput("CAPTION", binary_data=False))
+        results = client.infer(model_name="caption", inputs=inputs, outputs=outputs)
+        cap = results.as_numpy("CAPTION")
+        return cap
+    except Exception as e:
+        print(f"Error during Triton inference: {e}")  
         return None, None  
+    
+def request_vllm(description):
+    try:
+        url = "http://192.5.87.164:8005/v1/completions"
+        headers = {"Content-Type": "application/json"}
+        data = {
+            "model": "mistralai/Mistral-7B-Instruct-v0.2",
+            "prompt": "Generate 5 tags for the description: " + description,
+            "max_tokens": 32,
+            "temperature": 0.7
+        }
+        response = requests.post(url, headers=headers, json=data)
+        print(response.json())
+    except Exception as e:
+        print(f"Error during vLLM inference: {e}")  
+        app.logger.error(f"Error during inference: {e}")
+        return None, None 
 
 @app.route('/', methods=['GET'])
 def index():
@@ -101,13 +147,28 @@ def upload():
         app.logger.info(f"Prediction ID: {prediction_id}")
 
         preds, probs = request_fastapi(img_path)
+        description = request_triton(img_path)
+        tags = request_vllm(description)
+
         app.logger.info(f"Predicted class: {preds}")
+        app.logger.info(f"Description: {description}")
+        app.logger.info(f"Tags: {tags}")
+
         if preds:
             executor.submit(upload_production_bucket, img_path, preds, probs, prediction_id) # New! upload production image to MinIO bucket
             app.logger.info(f"Image uploaded to production bucket with ID: {prediction_id}")
-            return f'<button type="button" class="btn btn-info btn-sm">{preds}</button>'
-
-    return '<a href="#" class="badge badge-warning">Warning</a>'
+            # return f'<button type="button" class="btn btn-info btn-sm">{preds}</button>'
+            return f'''
+                <div class="alert alert-info">
+                    <h5>Prediction:</h5>
+                    <p>{preds}</p>
+                    <h5>Description:</h5>
+                    <p>{description}</p>
+                    <h5>Tags:</h5>
+                    <p>{tags}</p>
+                </div>
+            '''
+    return '<div class="alert alert-warning">Warning: No prediction made.</div>'
 
 @app.route('/test', methods=['GET'])
 def test():
