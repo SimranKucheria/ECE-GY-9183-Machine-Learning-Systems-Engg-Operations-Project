@@ -110,10 +110,13 @@ def request_triton(image_path):
         outputs.append(httpclient.InferRequestedOutput("CAPTION", binary_data=False))
         results = client.infer(model_name="caption", inputs=inputs, outputs=outputs)
         cap = results.as_numpy("CAPTION")
-        return cap
+        caption_text = cap[0] if cap is not None and len(cap) > 0 else None
+        return caption_text
     except Exception as e:
-        print(f"Error during Triton inference: {e}")  
-        return None, None  
+        import traceback
+        app.logger.error(f"Triton inference failed: {e}")
+        app.logger.error(traceback.format_exc())
+        return None 
     
 def request_vllm(description):
     try:
@@ -129,7 +132,7 @@ def request_vllm(description):
     except Exception as e:
         print(f"Error during vLLM inference: {e}")  
         app.logger.error(f"Error during inference: {e}")
-        return None, None 
+        return None
 
 @app.route('/', methods=['GET'])
 def index():
@@ -148,8 +151,12 @@ def upload():
         app.logger.info(f"Prediction ID: {prediction_id}")
 
         preds, probs = request_fastapi(img_path)
+        print(f"Predicted class: {preds}")
         description = request_triton(img_path)
-        tags = request_vllm(description)
+        if description is not None:
+            tags = request_vllm(description)
+        else:
+            tags = None
 
         app.logger.info(f"Predicted class: {preds}")
         app.logger.info(f"Description: {description}")
