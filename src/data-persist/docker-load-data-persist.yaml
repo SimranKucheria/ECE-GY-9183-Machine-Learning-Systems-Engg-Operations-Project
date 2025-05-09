@@ -9,7 +9,7 @@ services:
     image: rclone/rclone:latest
     volumes:
       - Project3Data:/data
-      - ~/.config/rclone/rclone.conf:/root/.config/rclone/rclone.conf:ro
+      - /home/cc/.config/rclone/rclone.conf:/root/.config/rclone/rclone.conf:ro
     entrypoint: /bin/sh
     command:
       - -c

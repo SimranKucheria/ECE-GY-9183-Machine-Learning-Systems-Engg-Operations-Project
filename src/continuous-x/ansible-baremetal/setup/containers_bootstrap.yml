@@ -1,0 +1,16 @@
+---
+- name: Configure Training Node
+  hosts: node1
+  become: yes
+  tasks:
+    - name: Install Training Containers
+      shell: |
+        docker compose -f /tmp/deeptrust/src/train/train-infrastructure.yaml up -d     
+- name: Configure Serving Node
+  hosts: node2
+  become: yes
+  tasks:
+    tasks:
+    - name: Install Training Containers
+      shell: |
+        docker compose -f /tmp/deeptrust/src/serving/docker-compose-serve.yaml up -d                

@@ -1,6 +1,6 @@
 ---
 - name: Configure RClone Confs
-  hosts: node1,node2
+  hosts: node1
   become: yes
   tasks:
     - name: Install Rclone
@@ -40,10 +40,7 @@
         docker compose -f /tmp/deeptrust/src/data-persist/docker-regnet-data-persist.yaml run sanitise-data  
     - name: Run Transform Data Stage For Regnet
       shell: |
-        docker compose -f /tmp/deeptrust/src/data-persist/docker-regnet-data-persist.yaml run transform-data  
-    - name: Run Load Data Stage For Regnet
-      shell: |
-        docker compose -f /tmp/deeptrust/src/data-persist/docker-regnet-data-persist.yaml run load-data
+        docker compose -f /tmp/deeptrust/src/data-persist/docker-regnet-data-persist.yaml run transform-data 
     - name: Run Extract Data Stage For Blip
       shell: |
         docker compose -f /tmp/deeptrust/src/data-persist/docker-blip-data-persist.yaml run extract-data  
@@ -53,25 +50,6 @@
     - name: Run Transform Data Stage For Blip
       shell: |
         docker compose -f /tmp/deeptrust/src/data-persist/docker-blip-data-persist.yaml run tranform-data  
-    - name: Run Load Data Stage For Blip
+    - name: Run Load Data Stage For Regnet and Blip
       shell: |
-        docker compose -f /tmp/deeptrust/src/data-persist/docker-blip-data-persist.yaml run load-data    
-
-- name: Mount Object Storage
-  hosts: node1,node2
-  become: yes
-  tasks:
-    - name: Create mount directory
-      shell: |
-        sudo mkdir -p /mnt/object
-    - name: Change ownership permissions
-      shell: |
-        sudo chown -R cc /mnt/object
-    - name: Change group permissions
-      shell: |
-        sudo chgrp -R cc /mnt/object
-    - name: Mount
-      shell: |
-        rclone mount chi_tacc:object-persist-project3 /mnt/object --read-only --allow-other --daemon
-   
-
+        docker compose -f /tmp/deeptrust/src/data-persist/docker-load-data-persist.yaml run load-data    

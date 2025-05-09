@@ -34,6 +34,7 @@ resource "openstack_networking_port_v2" "sharednet1_ports" {
       data.openstack_networking_secgroup_v2.allow_8081.id,
       data.openstack_networking_secgroup_v2.allow_http_80.id,
       data.openstack_networking_secgroup_v2.allow_9090.id,
+      data.openstack_networking_secgroup_v2.allow_9000.id,
       data.openstack_networking_secgroup_v2.allow_3000.id
     ]
 }
@@ -69,7 +70,6 @@ resource "openstack_networking_floatingip_v2" "floating_ip" {
 }
 
 resource "openstack_blockstorage_volume_v3" "volume_1" {
-  region      = "RegionOne"
   name        = "block-persist-${var.suffix}"
   description = "Block Storage for Project 3"
   size        = 50
