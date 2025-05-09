@@ -1,6 +1,6 @@
 {
     "pip": "requirements_ray.txt",
     "env_vars": {
-        "AIVSHUMAN_DATA": "/mnt/object"
+        "AIVSHUMAN_DATA": "/mnt/AiVsHuman"
     }
 }
