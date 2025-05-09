@@ -141,7 +141,7 @@ services:
   app-for-training:
     build:
       context: .
-      dockerfile: Dockerfile.app
+      dockerfile: Dockerfile.train_app
     deploy:
       resources:
         reservations:
