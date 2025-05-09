@@ -14,8 +14,6 @@ services:
               capabilities: [gpu]
     ports:
       - "8000:8000"  # for HTTP requests
-    networks:
-      - production_net  
 
   triton_server:
     build:
@@ -34,8 +32,6 @@ services:
       - "8010:8010"  # for HTTP requests
       - "8001:8001"  # for GRPC requests
       - "8002:8002"  # for reporting metrics
-    networks:
-      - production_net
 
   vllm:
     image: vllm/vllm-openai:latest
@@ -63,7 +59,8 @@ services:
     ports:
       - "8888:8888"
     volumes:
-      - /home/cc/ECE-GY-9183-Machine-Learning-Systems-Engg-Operations-Project/src/serving/workspace:/home/jovyan/work
+      - /home/cc/deeptrust:/home/jovyan/work
+      - /mnt/object:/mnt/data
     command: >
       bash -c "python3 -m pip install numpy && start-notebook.sh"
 
