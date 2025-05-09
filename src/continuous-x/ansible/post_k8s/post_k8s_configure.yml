@@ -230,4 +230,7 @@
     - name: Apply secret to default namespace
       command: >
         kubectl create secret generic github-token-secret --from-literal=token={{token}}   
+    - name: Apply secret to argocd namespace
+      command: >
+        kubectl create secret generic github-token-secret --from-literal=token={{token}} -n argocd   
 
