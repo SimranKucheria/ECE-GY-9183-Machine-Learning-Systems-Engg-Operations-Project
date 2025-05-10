@@ -9,6 +9,7 @@
       environment:
             FLOATING_IP: "A.B.C.D"
             HOST_IP: "E.F.G.H"
+            MINIO_PW: <AddPW>
 - name: Configure Serving Node
   hosts: node2
   become: yes
