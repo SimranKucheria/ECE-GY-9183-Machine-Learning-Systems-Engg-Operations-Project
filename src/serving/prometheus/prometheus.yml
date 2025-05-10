@@ -4,9 +4,22 @@ global:
 scrape_configs:
   - job_name: 'deeptrust'
     static_configs:
-      - targets: ['fastapi_server:8000','triton_server:8002'] 
+      - targets: ['<FIP>:8000','<FIP>:8002'] 
       
   - job_name: vllm
     static_configs:
       - targets:
-          - '192.5.87.150:8005'
+          - '<FIP>:8005'
+
+# global:
+#   scrape_interval: 15s
+
+# scrape_configs:
+#   - job_name: 'deeptrust'
+#     static_configs:
+#       - targets: ['fastapi_server:8000','triton_server:8002'] 
+      
+#   - job_name: vllm
+#     static_configs:
+#       - targets:
+#           - '192.5.87.150:8005'
