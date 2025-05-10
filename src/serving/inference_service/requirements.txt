@@ -9,3 +9,4 @@ torchvision==0.20.1
 prometheus-client
 alibi-detect
 transformers
+cloudpickle
