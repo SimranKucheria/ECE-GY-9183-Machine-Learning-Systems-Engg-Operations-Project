@@ -22,6 +22,7 @@ services:
       service: vllm
     ports:
       - "8005:8000"  # for HTTP requests  
+      - "8006:8005"  # for reporting metrix 
 
   jupyter:
     extends:

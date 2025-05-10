@@ -1,6 +1,7 @@
 name: deeptrust_serve-staging
 services:
   fastapi_server:
+    container_name: fastapi_server-staging
     extends:
       file: ../../serving/docker-compose-serve.yaml
       service: fastapi_server
@@ -8,6 +9,7 @@ services:
       - "8100:8000"  # for HTTP requests
 
   triton_server:
+    container_name: triton_server-staging
     extends:
       file: ../../serving/docker-compose-serve.yaml
       service: triton_server
@@ -17,13 +19,16 @@ services:
       - "8102:8002"  # for reporting metrics
 
   vllm:
+    container_name: vllm-staging
     extends:
       file: ../../serving/docker-compose-serve.yaml
       service: vllm
     ports:
       - "8105:8000"  # for HTTP requests  
+      - "8106:8005"  # for reporting metrix 
 
   jupyter:
+    container_name: jupyter-staging
     extends:
       file: ../../serving/docker-compose-serve.yaml
       service: jupyter
