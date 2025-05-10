@@ -56,15 +56,15 @@ spec:
               value: "{{workflow.parameters.target-environment}}"
 
   - name: download-model
-      inputs:
-        parameters:
-        - name: source-environment
-        - name: target-environment
-        - name: model-version
-        - name: endpoint-ip
-        - name: port
-          value: "{{= inputs.parameters.target-environment == 'canary' ? 5200 : 5000 }}"
-      script:
+    inputs:
+      parameters:
+      - name: source-environment
+      - name: target-environment
+      - name: model-version
+      - name: endpoint-ip
+      - name: port
+        value: "{{= inputs.parameters.target-environment == 'canary' ? 5200 : 5000 }}"
+    script:
         image: alpine:3.18
         command: [sh]
         source: |

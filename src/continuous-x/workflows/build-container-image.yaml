@@ -7,7 +7,6 @@ spec:
   arguments:
     parameters:
     - name: model-version
-     parameters:
     - name: endpoint-ip
 
   volumeClaimTemplates:

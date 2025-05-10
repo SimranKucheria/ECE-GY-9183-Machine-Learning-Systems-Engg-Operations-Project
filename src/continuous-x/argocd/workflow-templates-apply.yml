@@ -4,7 +4,7 @@
   become: yes
   vars:
     repo_url: "https://<TOKEN>@github.com/SimranKucheria/ECE-GY-9183-Machine-Learning-Systems-Engg-Operations-Project.git"
-    repo_dest: /tmp/deeptrust
+    repo_dest: /tmp/deeptrust/src/continuous-x
     workflow_dir: workflows
     argo_namespace: argo
     templates:
@@ -14,11 +14,6 @@
       - train-model.yaml
 
   tasks:
-    - name: Clone or update deeptrust repo
-      git:
-        repo: "{{ repo_url }}"
-        dest: "{{ repo_dest }}"
-        version: main
 
     - name: Apply selected WorkflowTemplates to Argo namespace
       command: kubectl apply -n {{ argo_namespace }} -f {{ repo_dest }}/{{ workflow_dir }}/{{ item }}
