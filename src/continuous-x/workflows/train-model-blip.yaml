@@ -1,7 +1,7 @@
 apiVersion: argoproj.io/v1alpha1
 kind: WorkflowTemplate
 metadata:
-  name: train-model
+  name: train-model-blip
 spec:
   entrypoint: training-and-build
   arguments:
@@ -79,7 +79,7 @@ spec:
 
         # Trigger model training
         echo "[INFO] Triggering model training..." >&2
-        RESPONSE=$(curl -f -s -X POST http://{{inputs.parameters.endpoint-ip}}:8005/start-training-vit)
+        RESPONSE=$(curl -f -s -X POST http://{{inputs.parameters.endpoint-ip}}:8005/start-training-blip)
         CURL_EXIT_CODE=$?
 
         echo "[INFO] Training endpoint response was: $RESPONSE" >&2
@@ -114,10 +114,10 @@ spec:
         apiVersion: argoproj.io/v1alpha1
         kind: Workflow
         metadata:
-          generateName: build-container-image
+          generateName: build-container-image-blip
         spec:
           workflowTemplateRef:
-            name: build-container-image
+            name: build-container-image-blip
           arguments:
             parameters:
             - name: model-version

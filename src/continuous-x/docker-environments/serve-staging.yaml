@@ -7,6 +7,13 @@ services:
       service: fastapi_server
     ports:
       - "8100:8000"  # for HTTP requests
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]  
 
   triton_server:
     container_name: triton_server-staging
@@ -26,6 +33,16 @@ services:
     ports:
       - "8105:8000"  # for HTTP requests  
       - "8106:8005"  # for reporting metrix 
+    volumes:
+      - ~/.cache/huggingface:/root/.cache/huggingface
+    command: --model --model mistralai/Mistral-7B-Instruct-v0.2 --dtype float16
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              capabilities: [gpu]
+    ipc: host  
 
   jupyter:
     container_name: jupyter-staging

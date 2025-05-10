@@ -1,7 +1,7 @@
 apiVersion: argoproj.io/v1alpha1
 kind: WorkflowTemplate
 metadata:
-  name: build-container-image
+  name: build-container-image-blip
 spec:
   entrypoint: reload-model
   arguments:
@@ -49,7 +49,7 @@ spec:
           arguments:
             parameters:
             - name: model-version
-              value: "vit{{workflow.parameters.model-version}}"
+              value: "blip{{workflow.parameters.model-version}}"
             - name: environment
               value: "staging"
 
@@ -126,7 +126,7 @@ spec:
 
         # Trigger model Deploy
         echo "[INFO] Triggering model deploying" >&2
-        RESPONSE=$(curl -f -s --header 'Content-Type: application/json' --request POST http://{{inputs.parameters.endpoint-ip}}:5100/update_VIT --data '{"model_version":"'{{inputs.parameters.run-id}}'"}')
+        RESPONSE=$(curl -f -s --header 'Content-Type: application/json' --request POST http://{{inputs.parameters.endpoint-ip}}:5100/update_BLIP --data '{"model_version":"'{{inputs.parameters.run-id}}'"}')
         CURL_EXIT_CODE=$?
 
         echo "[INFO] Model Update response was: $RESPONSE" >&2
@@ -150,7 +150,7 @@ spec:
       args:
         - --dockerfile=/mnt/workspace/src/serving/ui_service/Dockerfile
         - --context=/mnt/workspace/src/serving/ui_service/
-        - --destination=registry.kube-system.svc.cluster.local:5000/deeptrust-app:staging-1.0.vit{{inputs.parameters.model-version}}
+        - --destination=registry.kube-system.svc.cluster.local:5000/deeptrust-app:staging-1.0.blip{{inputs.parameters.model-version}}
         - --insecure
       volumeMounts:
       - name: workdir
@@ -166,7 +166,7 @@ spec:
       source: |
         pip install mlflow-skinny > /dev/null
         export MLFLOW_TRACKING_URI=http://mlflow.deeptrust-platform.svc.cluster.local:8000
-        python -c "import mlflow; client = mlflow.tracking.MlflowClient(); client.set_registered_model_alias(name='VITDeeptrustModel', alias='staging', version='{{inputs.parameters.model-version}}')"
+        python -c "import mlflow; client = mlflow.tracking.MlflowClient(); client.set_registered_model_alias(name='BLIPDeeptrustModel', alias='staging', version='{{inputs.parameters.model-version}}')"
   
   - name: trigger-deploy
     inputs:

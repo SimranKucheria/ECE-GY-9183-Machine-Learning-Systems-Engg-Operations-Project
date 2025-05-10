@@ -101,7 +101,7 @@ spec:
 
           # Trigger model training
           echo "[INFO] Triggering model deploying" >&2
-          RESPONSE=$(curl -f -s --header 'Content-Type: application/json' --request POST http://{{inputs.parameters.endpoint-ip}}:{{port}}/update_VIT --data '{"model_version":"'{{inputs.parameters.model-version}}'" }')
+          RESPONSE=$(curl -f -s --header 'Content-Type: application/json' --request POST http://{{inputs.parameters.endpoint-ip}}:{{port}}/update_BLIP --data '{"model_version":"'{{inputs.parameters.model-version}}'" }')
           CURL_EXIT_CODE=$?
 
           echo "[INFO] Model Update response was: $RESPONSE" >&2
@@ -126,8 +126,8 @@ spec:
           skopeo copy \
             --src-tls-verify=false \
             --dest-tls-verify=false \
-            docker://registry.kube-system.svc.cluster.local:5000/deeptrust-app:{{inputs.parameters.source-environment}}-1.0.vit{{inputs.parameters.model-version}} \
-            docker://registry.kube-system.svc.cluster.local:5000/deeptrust-app:{{inputs.parameters.target-environment}}-1.0.vit{{inputs.parameters.model-version}}
+            docker://registry.kube-system.svc.cluster.local:5000/deeptrust-app:{{inputs.parameters.source-environment}}-1.0.blip{{inputs.parameters.model-version}} \
+            docker://registry.kube-system.svc.cluster.local:5000/deeptrust-app:{{inputs.parameters.target-environment}}-1.0.blip{{inputs.parameters.model-version}}
 
   - name: set-mlflow-alias
     inputs:
@@ -140,7 +140,7 @@ spec:
       source: |
         pip install mlflow-skinny > /dev/null
         export MLFLOW_TRACKING_URI=http://mlflow.deeptrust-platform.svc.cluster.local:8000
-        python -c "import mlflow; client = mlflow.tracking.MlflowClient(); client.set_registered_model_alias(name='VITDeeptrustModel', alias='{{inputs.parameters.alias}}', version='{{inputs.parameters.model-version}}')"
+        python -c "import mlflow; client = mlflow.tracking.MlflowClient(); client.set_registered_model_alias(name='BLIPDeeptrustModel', alias='{{inputs.parameters.alias}}', version='{{inputs.parameters.model-version}}')"
 
   - name: trigger-deploy
     inputs:
@@ -162,6 +162,6 @@ spec:
             - name: environment
               value: "{{inputs.parameters.environment}}"
             - name: model-version
-              value: "vit{{inputs.parameters.model-version}}"
+              value: "blip{{inputs.parameters.model-version}}"
 
        
