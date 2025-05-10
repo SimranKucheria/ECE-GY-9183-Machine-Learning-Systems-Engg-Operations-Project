@@ -68,6 +68,70 @@ def upload_production_bucket(img_path, preds, confidence, prediction_id):
         }
     )
 
+# for uploading captions & images to MinIO bucket
+def upload_captioning_bucket(img_path, caption, prediction_id):
+    timestamp = datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%SZ')
+
+    bucket_name = "production"
+    root, ext = os.path.splitext(img_path)
+    content_type = guess_type(img_path)[0] or 'application/octet-stream'
+    s3_key = f"captioning/{prediction_id}{ext}"
+    
+    # Upload the image
+    with open(img_path, 'rb') as f:
+        s3.upload_fileobj(
+            f,
+            bucket_name,
+            s3_key,
+            ExtraArgs={'ContentType': content_type}
+        )
+    
+    # Tag the object with the caption
+    s3.put_object_tagging(
+        Bucket=bucket_name,
+        Key=s3_key,
+        Tagging={
+            'TagSet': [
+                {'Key': 'caption', 'Value': caption},
+                {'Key': 'timestamp', 'Value': timestamp}
+            ]
+        }
+    )
+
+def upload_tagging_bucket(img_path, tags, prediction_id):
+    timestamp = datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%SZ')
+
+    app.logger.info(f"Tags: {tags}")
+    app.logger.info(f"Type: {type(tags)}")
+
+    bucket_name = "production"
+    root, ext = os.path.splitext(img_path)
+    content_type = guess_type(img_path)[0] or 'application/octet-stream'
+    s3_key = f"tags/{prediction_id}{ext}"
+    
+    # Upload the image
+    with open(img_path, 'rb') as f:
+        s3.upload_fileobj(
+            f,
+            bucket_name,
+            s3_key,
+            ExtraArgs={'ContentType': content_type}
+        )
+    
+    # Tag the object with the generated tags
+    s3.put_object_tagging(
+        Bucket=bucket_name,
+        Key=s3_key,
+        Tagging={
+            'TagSet': [
+                {'Key': 'tags', 'Value': tags},
+                {'Key': 'timestamp', 'Value': timestamp}
+            ]
+        }
+    )
+
+
+
 # for making requests to FastAPI
 def request_fastapi(image_path):
     try:
@@ -177,6 +241,8 @@ def upload():
 
         if preds:
             executor.submit(upload_production_bucket, img_path, preds, probs, prediction_id) # New! upload production image to MinIO bucket
+            executor.submit(upload_captioning_bucket, img_path, description, prediction_id) 
+            executor.submit(upload_tagging_bucket, img_path, description, prediction_id) 
             app.logger.info(f"Image uploaded to production bucket with ID: {prediction_id}")
             # return f'<button type="button" class="btn btn-info btn-sm">{preds}</button>'
             return f'''
