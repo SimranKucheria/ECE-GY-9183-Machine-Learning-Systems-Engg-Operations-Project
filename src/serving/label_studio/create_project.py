@@ -59,11 +59,13 @@ if res.status_code == 201:
 else:
     raise Exception("Failed to create project:", res.text)
 
+public_ip = requests.get("http://169.254.169.254/latest/meta-data/public-ipv4").text.strip()
 s3 = boto3.client(
     "s3",
     # @TODO: Change to minio endpoint
-    endpoint_url=MINIO_URL,
-    # endpoint_url="http://localhost:9000/",
+    # endpoint_url=MINIO_URL,
+    # # endpoint_url="http://localhost:9000/",
+    endpoint_url=f"http://{public_ip}:9000",
     aws_access_key_id=MINIO_ACCESS_KEY,
     aws_secret_access_key=MINIO_SECRET_KEY,
     region_name="us-east-1",

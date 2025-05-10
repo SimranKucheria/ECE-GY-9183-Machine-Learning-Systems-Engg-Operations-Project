@@ -29,7 +29,7 @@ services:
               count: all
               capabilities: [gpu]
     # ports:
-    #   - "8010:8010"  # for HTTP requests
+    #   - "8000:8000"  # for HTTP requests
     #   - "8001:8001"  # for GRPC requests
     #   - "8002:8002"  # for reporting metrics
 
@@ -44,7 +44,7 @@ services:
     #   - "8005:8000"
     volumes:
       - ~/.cache/huggingface:/root/.cache/huggingface
-    command: --model mistralai/Mistral-7B-Instruct-v0.2
+    command: --model meta-llama/Llama-3.1-8B-Instruct --dtype float16
     deploy:
       resources:
         reservations:

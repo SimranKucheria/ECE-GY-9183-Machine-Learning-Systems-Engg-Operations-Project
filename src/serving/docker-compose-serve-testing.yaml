@@ -44,7 +44,7 @@ services:
       - "8005:8000"
     volumes:
       - ~/.cache/huggingface:/root/.cache/huggingface
-    command: --model mistralai/Mistral-7B-Instruct-v0.2
+    command: --model meta-llama/Llama-3.1-8B-Instruct --dtype float16
     deploy:
       resources:
         reservations:
@@ -74,7 +74,8 @@ services:
     environment:
       - FASTAPI_SERVER_URL=http://fastapi_server:8000
       - TRITON_SERVER_URL=triton_server:8000
-      - VLLM_SERVER_URL=http://vllm:8005
+      #@TODO change to floating IP?
+      - VLLM_SERVER_URL=http://192.5.87.150:8005/v1/completions
       - MINIO_URL=http://minio:9000
       - MINIO_USER=your-access-key
       - MINIO_PASSWORD=your-secret-key

@@ -120,15 +120,26 @@ def request_triton(image_path):
     
 def request_vllm(description):
     try:
+        prompt = f"""
+            Generate indexing tags using the image description.
+            The tags should be useful for information retrieval on an image-sharing platform.
+
+            Example:
+            Description: a man walking a dog
+            Tags: man, walking, dog, pet, outdoors
+
+            Now generate tags for the following image description: {description}
+        """
         headers = {"Content-Type": "application/json"}
         data = {
             "model": "mistralai/Mistral-7B-Instruct-v0.2",
-            "prompt": "Generate tags for the description: " + description,
-            "max_tokens": 32,
+            "prompt": prompt,
+            "max_tokens": 300,
             "temperature": 0.7
         }
         response = requests.post(VLLM_SERVER_URL, headers=headers, json=data)
-        print(response.json())
+        app.logger.info(response.json())
+        return response.json()
     except Exception as e:
         print(f"Error during vLLM inference: {e}")  
         app.logger.error(f"Error during inference: {e}")
@@ -155,6 +166,8 @@ def upload():
         description = request_triton(img_path)
         if description is not None:
             tags = request_vllm(description)
+            if tags is not None:
+                tags = tags.get("choices")[0].get("text")  
         else:
             tags = None
 
