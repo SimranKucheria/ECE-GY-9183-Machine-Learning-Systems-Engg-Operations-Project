@@ -1,0 +1,19 @@
+ online-data-simulator:
+    container_name: online_data_simulator
+    image: python:3.11
+    volumes:
+      - /mnt/project3/Flickr30k:/data/Flickr30k
+    working_dir: /data
+    environment:
+      - FASTAPI_URL=http://${FLOATING_IP}:8000/
+      - LOAD_PATTERN=1,2,3,5,3,2,1
+      - DELAY_BETWEEN_STEPS=60
+      - REQUEST_TIMEOUT=5
+    depends_on:
+      - fastapi_server
+    command:
+      - bash
+      - -c
+      - |
+        pip install requests pillow pandas
+        python /data/online_data_simulator_regnet.py
