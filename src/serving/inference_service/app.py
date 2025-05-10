@@ -74,6 +74,7 @@ class PredictionResponse(BaseModel):
 
 # Set device (GPU if available, otherwise CPU)
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+Log.info(f"Using device: {device}")
 
 # Load the RegNet model
 # MODEL_PATH = "model.pth"
@@ -85,7 +86,9 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 model = ViTForImageClassification.from_pretrained('google/vit-base-patch16-224')
 #TODO: confirm
 MODEL_PATH = "model/data/model.pth"
+Log.info(f"Loading model from {MODEL_PATH}")
 model = torch.load(MODEL_PATH, map_location=device, weights_only=False)
+Log.info(f"Model loaded from {MODEL_PATH}")
 model = model.to(device) # load the model into the GPU
 Log.info(f"Model classifier head: {model.classifier}")
 Log.info(f"Number of labels: {model.config.num_labels}")

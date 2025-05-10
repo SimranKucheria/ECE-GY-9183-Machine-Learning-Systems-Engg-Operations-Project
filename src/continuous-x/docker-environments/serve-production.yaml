@@ -35,8 +35,7 @@ services:
       file: ../../serving/docker-compose-serve.yaml
       service: vllm
     ports:
-      - "8005:8000"  # for HTTP requests  
-      - "8006:8005"  # for reporting metrix 
+      - "8005:8000"  # for HTTP requests   
     volumes:
       - ~/.cache/huggingface:/root/.cache/huggingface
     command: --model --model mistralai/Mistral-7B-Instruct-v0.2 --dtype float16
