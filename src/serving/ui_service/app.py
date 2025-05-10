@@ -1,6 +1,6 @@
 import numpy as np
 import requests
-from flask import Flask, redirect, url_for, request, render_template
+from flask import Flask, redirect, url_for, request, render_template, flash
 from werkzeug.utils import secure_filename
 import os
 import base64
@@ -67,6 +67,7 @@ def upload_production_bucket(img_path, preds, confidence, prediction_id):
             ]
         }
     )
+    return s3_key
 
 # for uploading captions & images to MinIO bucket
 def upload_captioning_bucket(img_path, caption, prediction_id):
@@ -86,6 +87,7 @@ def upload_captioning_bucket(img_path, caption, prediction_id):
             ExtraArgs={'ContentType': content_type}
         )
     
+    caption = caption if caption is not None else "No caption generated"
     # Tag the object with the caption
     s3.put_object_tagging(
         Bucket=bucket_name,
@@ -97,8 +99,9 @@ def upload_captioning_bucket(img_path, caption, prediction_id):
             ]
         }
     )
+    return s3_key
 
-def upload_tagging_bucket(img_path, tags, prediction_id):
+def upload_tagging_bucket(img_path, tags, description, prediction_id):
     timestamp = datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%SZ')
 
     app.logger.info(f"Tags: {tags}")
@@ -119,16 +122,35 @@ def upload_tagging_bucket(img_path, tags, prediction_id):
         )
     
     # Tag the object with the generated tags
+    tags = tags if tags is not None else "No tags"
+    description = description if description is not None else "No description"
     s3.put_object_tagging(
         Bucket=bucket_name,
         Key=s3_key,
         Tagging={
             'TagSet': [
                 {'Key': 'tags', 'Value': tags},
+                {'Key': 'description', 'Value': description},
                 {'Key': 'timestamp', 'Value': timestamp}
             ]
         }
     )
+    return s3_key
+
+def get_prediction_key(prediction_id, img_path):
+    filename = os.path.basename(img_path)
+    s3_key = f"production/{prediction_id}_{filename}.txt"
+    return s3_key
+
+def get_caption_key(prediction_id, img_path):
+    filename = os.path.basename(img_path)
+    s3_key = f"production/captions/{prediction_id}_{filename}.txt"
+    return s3_key
+
+def get_tags_key(prediction_id, img_path):
+    filename = os.path.basename(img_path)
+    s3_key = f"production/tags/{prediction_id}_{filename}.txt"
+    return s3_key
 
 
 
@@ -240,22 +262,75 @@ def upload():
         app.logger.info(f"Tags: {tags}")
 
         if preds:
-            executor.submit(upload_production_bucket, img_path, preds, probs, prediction_id) # New! upload production image to MinIO bucket
-            executor.submit(upload_captioning_bucket, img_path, description, prediction_id) 
-            executor.submit(upload_tagging_bucket, img_path, description, prediction_id) 
+            future_pred = executor.submit(upload_production_bucket, img_path, preds, probs, prediction_id)
+            future_caption = executor.submit(upload_captioning_bucket, img_path, description, prediction_id)
+            future_tags = executor.submit(upload_tagging_bucket, img_path, tags, description, prediction_id)
             app.logger.info(f"Image uploaded to production bucket with ID: {prediction_id}")
+
+            # Get the actual S3 keys from the futures
+            s3_key_pred = future_pred.result()
+            s3_key_caption = future_caption.result()
+            s3_key_tags = future_tags.result()
+
+            app.logger.info(f"Prediction S3 key: {s3_key_pred}")
+            app.logger.info(f"Caption S3 key: {s3_key_caption}")
+            app.logger.info(f"Tags S3 key: {s3_key_tags}")
+
             # return f'<button type="button" class="btn btn-info btn-sm">{preds}</button>'
+
+            flag_form_pred = f'''
+            <form method="POST" action="/flag/{s3_key_pred}" style="display:inline">
+                <input type="hidden" name="feedback_type" value="prediction">
+                <button type="submit" class="btn btn-outline-danger btn-sm">👎</button>
+            </form>'''
+
+            flag_form_caption = f'''
+                <form method="POST" action="/flag/{s3_key_caption}" style="display:inline">
+                    <input type="hidden" name="feedback_type" value="caption">
+                    <button type="submit" class="btn btn-outline-danger btn-sm">👎</button>
+                </form>'''
+
+            flag_form_tags = f'''
+                <form method="POST" action="/flag/{s3_key_tags}" style="display:inline">
+                    <input type="hidden" name="feedback_type" value="tags">
+                    <button type="submit" class="btn btn-outline-danger btn-sm">👎</button>
+                </form>'''
+
             return f'''
                 <div class="alert alert-info">
-                    <h5>Prediction:</h5>
+                    <h5>Prediction: {flag_form_pred}</h5>
                     <p>{preds}</p>
-                    <h5>Description:</h5>
+                    <h5>Description: {flag_form_caption}</h5>
                     <p>{description}</p>
-                    <h5>Tags:</h5>
+                    <h5>Tags: {flag_form_tags}</h5>
                     <p>{tags}</p>
                 </div>
             '''
     return '<div class="alert alert-warning">Warning: No prediction made.</div>'
+
+@app.route('/flag/<path:key>', methods=['POST'])
+def flag_object(key):
+    bucket = "production"
+    feedback_type = request.form.get('feedback_type', 'unknown')
+    
+    app.logger.info(f"Flagging object: {key} as {feedback_type}")
+    
+    # Get current tags
+    current_tags = s3.get_object_tagging(Bucket=bucket, Key=key)['TagSet']
+    tags = {t['Key']: t['Value'] for t in current_tags}
+    
+    # Add flagged tag and feedback type
+    tags["flagged"] = "true"
+    tags["feedback_type"] = feedback_type
+    tags["flagged_at"] = datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%SZ')
+    
+    # Convert back to tag set format
+    tag_set = [{'Key': k, 'Value': v} for k, v in tags.items()]
+    
+    # Update object tags
+    s3.put_object_tagging(Bucket=bucket, Key=key, Tagging={'TagSet': tag_set})
+    app.logger.info(f"Feedback recieved {feedback_type}!")
+    return '', 204  # No Content: allows staying on the same page 
 
 @app.route('/test', methods=['GET'])
 def test():
