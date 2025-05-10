@@ -1,0 +1,20 @@
+name: deeptrust_serve-canary-fetcher
+services:
+  fetcher:
+      extends:
+        file: ../../serving/docker-compose-serve.yaml
+        service: fetcher
+      ports:
+        - "5200:5000"
+      volumes:
+        - ../../serving/inference_service/:/data/vit
+        - ../../serving/BLIP/:/data/blip
+        - /var/run/docker.sock:/var/run/docker.sock
+        - ../docker-environments:/scripts
+        - ../../serving/:/serving
+      environment:
+        - DOCKER_COMPOSE_DIR=serve-canary.yaml
+        - MLFLOW_TRACKING_URI=http://${FLOATING_IP}:8000 
+        - FLOATING_IP=${FLOATING_IP}
+        - HF_API_KEY=${HF_API_KEY}
+      restart: always

@@ -83,7 +83,7 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 # Load the ViT model
 model = ViTForImageClassification.from_pretrained('google/vit-base-patch16-224')
-MODEL_PATH = "model.pth"
+MODEL_PATH = "model/data/model.pth"
 model.load_state_dict(torch.load(MODEL_PATH, map_location=device))
 model = model.to(device) # load the model into the GPU
 Log.info(f"Model classifier head: {model.classifier}")

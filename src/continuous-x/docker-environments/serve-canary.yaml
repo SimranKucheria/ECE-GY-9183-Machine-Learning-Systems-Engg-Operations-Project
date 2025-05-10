@@ -30,16 +30,4 @@ services:
     ports:
       - "8288:8888"  # for HTTP requests 
 
-  fetcher:
-    extends:
-      file: ../../serving/docker-compose-serve.yaml
-      service: fetcher
-    ports:
-      - "5200:5000"
-    volumes:
-      - ./inference_service/:/data/vit
-      - ./BLIP/:/data/blip
-    environment:
-      - DOCKER_COMPOSE_DIR=/tmp/deeptrust/src/continuous-x/docker-environments/serve-canary.yaml 
-      - MLFLOW_TRACKING_URI=http://${FLOATING_IP}:8000 
-    restart: always
+  
