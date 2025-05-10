@@ -1,4 +1,4 @@
-name: deeptrust_serve-canary-fetcher
+name: deeptrust_serve-staging-fetcher
 services:
   fetcher:
       extends:
