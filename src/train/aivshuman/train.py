@@ -212,8 +212,8 @@ if __name__ == "__main__":
     files = os.listdir("/")
     print(files)
 
-    data_dir = os.getenv("AIVSHUMAN_DATA", "/data/AiVsHuman")
-    train_csv_path = os.path.join(data_dir, "train.csv")
+    data_dir = os.getenv("AIVSHUMAN_DATA", "/mnt/AiVsHuman")
+    train_csv_path = os.path.join(data_dir, "training.csv")
     config = {
         # "labels": pd.read_csv(train_csv_path).iloc[:, 1:].copy(),
         "train_csv_path": train_csv_path,
