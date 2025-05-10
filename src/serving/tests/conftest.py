@@ -98,7 +98,7 @@ def predict(transform):
 
 @pytest.fixture(scope="session")
 def model():
-    model_path = "/Users/manali/nyu/COURSES/Sem4/MLOps/serving/inference_service/model.pth"  
+    model_path = "/Users/manali/nyu/COURSES/Sem4/MLOps/serving/inference_service/model/data/model.pth"  
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     model = torch.load(model_path, map_location=device, weights_only=False)
     _ = model.eval()  
