@@ -8,11 +8,11 @@
         docker compose -f /tmp/deeptrust/src/train/train-infrastructure.yaml up -d 
       environment:
             FLOATING_IP: "A.B.C.D"
+            HOST_IP: "E.F.G.H"
 - name: Configure Serving Node
   hosts: node2
   become: yes
   tasks:
-    tasks:
     - name: Install Serving Containers Canary
       shell: |
         docker compose -f /tmp/deeptrust/src/continuous-x/docker-environments/serve-canary.yaml up -d    
