@@ -8,6 +8,7 @@ spec:
     parameters:
     - name: model-version
     - name: endpoint-ip
+    - name: run-id
 
   volumeClaimTemplates:
   - metadata:
@@ -28,7 +29,7 @@ spec:
           arguments:
             parameters:
             - name: model-version
-              value: "{{workflow.parameters.model-version}}"
+              value: "{{workflow.parameters.run-id}}"
             - name: endpoint-ip
               value: "{{workflow.parameters.endpoint-ip}}"
       - - name: kaniko-build

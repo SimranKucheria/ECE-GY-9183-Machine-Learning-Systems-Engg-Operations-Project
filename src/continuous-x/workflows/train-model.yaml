@@ -23,15 +23,25 @@ spec:
           arguments:
             parameters:
             - name: model-version
-              value: "{{steps.trigger-training-endpoint.outputs.result}}"
+              value: "{{steps.trigger-training-endpoint.outputs.parameters.model-version}}"
+            - name: run-id
+              value: "{{steps.trigger-training-endpoint.outputs.parameters.run-id}}"  
             - name: endpoint-ip  
               value: "{{workflow.parameters.endpoint-ip-model}}"
-          when: "{{steps.trigger-training-endpoint.outputs.result}} != ''"
+          when: "{{steps.trigger-training-endpoint.outputs.parameters.model-version}} != ''"
 
   - name: call-endpoint
     inputs:
       parameters:
       - name: endpoint-ip
+    outputs:
+      parameters:
+      - name: model-version
+        valueFrom:
+          path: /outputs/model-version
+      - name: run-id
+        valueFrom:
+          path: /outputs/run-id  
     script:
       image: alpine:3.18
       command: [sh]
@@ -81,19 +91,22 @@ spec:
         fi
 
         # Extract model version
-        VERSION=$(echo "$RESPONSE" | jq -r '.new_model_version // empty')
+        RUNID=$(echo "$RESPONSE" | jq -r '.new_model_version // empty')
+        VERSION=$(echo "$RESPONSE" | jq -r '.mv // empty')
 
         if [ -z "$VERSION" ]; then
           echo "[WARN] 'new_model_version' not found in response." >&2
           exit 1
         fi
 
-        echo -n "$VERSION"
+        echo -n "$RUNID" > /outputs/run-id
+        echo -n "$VERSION" > /outputs/model-version
 
   - name: trigger-build
     inputs:
       parameters:
       - name: model-version
+      - name: run-id
       - name: endpoint-ip 
     resource:
       action: create
@@ -109,5 +122,7 @@ spec:
             parameters:
             - name: model-version
               value: "{{inputs.parameters.model-version}}"
+            - name: run-id
+              value: "{{inputs.parameters.run-id}}"   
             - name: endpoint-ip
               value: "{{inputs.parameters.endpoint-ip}}"  
