@@ -36,7 +36,7 @@ class CustomImageDataset(Dataset):
         return len(self.annotations)
 
     def __getitem__(self, idx):
-        img_path = os.path.join(self.img_dir, self.annotations.iloc[idx, 0])
+        img_path = os.path.join(self.img_dir, "Images/" + self.annotations.iloc[idx, 0])
         image = Image.open(img_path).convert("RGB")
         label = torch.tensor(int(self.annotations.iloc[idx, 1]))
         if self.transform:
@@ -78,7 +78,7 @@ def train_func(config):
         run_name=f"fold-{config['n_fold']}"
     )
 
-    mlflow.pytorch.autolog()
+    mlflow.start_run(run_id=mlflow_logger.run_id)
 
     config["labels"] = pd.read_csv(config["train_csv_path"]).iloc[:, 1:].copy()
 
@@ -191,14 +191,16 @@ def train_func(config):
         lr=config["lr"],
         warmup_epochs=config["warmup_epochs"]
     )
+
     mlflow.pytorch.log_model(
         pytorch_model=best_model,
-        artifact_path="vit-model",
-        registered_model_name="vit-ai-detection-model"
+        artifact_path="model",
+        registered_model_name="VITDeeptrustModel",
+        pip_requirements=["torch", "transformers", "lightning"]
     )
     
-    # Log additional artifacts (optional)
-    mlflow.log_artifact(checkpoint_callback.best_model_path)
+    
+    mlflow.end_run()
 
 if __name__ == "__main__":
     # Configuration
