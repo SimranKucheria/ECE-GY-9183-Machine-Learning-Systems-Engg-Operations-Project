@@ -1,4 +1,4 @@
-```
+---
 - name: Set up from GitHub Repo
   hosts: node1,node2
   become: yes
@@ -69,4 +69,3 @@
     - name: Download nvtop
       shell: |
        sudo apt -y install nvtop
-```
