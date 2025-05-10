@@ -1,0 +1,21 @@
+  simulate-online-data:
+    container_name: etl_simulate_online_data
+    image: python:3.11
+    depends_on:
+      - fastapi_server
+    volumes:
+      - /mnt/project3/AiVsHuman:/data/AiVsHuman
+    working_dir: /data
+    environment:
+      - FASTAPI_URL=http://${FLOATING_IP}:8000/
+      - LOAD_PATTERN=1,2,3,5,3,2,1
+      - DELAY_BETWEEN_STEPS=60
+      - REQUEST_TIMEOUT=5
+    command:
+      - bash
+      - -c
+      - |
+        set -e
+        pip install requests pillow
+        echo "Running online data simulator..."
+        python3 /data/online_data_simulator_blip.py

@@ -9,7 +9,7 @@ from pathlib import Path
 from PIL import Image
 from io import BytesIO
 
-FASTAPI_URL = os.environ.get("FASTAPI_URL", "http://fastapi_server:8000/predict")
+FASTAPI_URL = os.environ.get("FASTAPI_URL", "http://${FLOATING_IP}:8000/")
 LOAD_PATTERN = [int(x) for x in os.environ.get("LOAD_PATTERN", "1,2,3,5,3,2,1").split(",")]
 DELAY_BETWEEN_STEPS = int(os.environ.get("DELAY_BETWEEN_STEPS", "60"))
 REQUEST_TIMEOUT = int(os.environ.get("REQUEST_TIMEOUT", "5"))
