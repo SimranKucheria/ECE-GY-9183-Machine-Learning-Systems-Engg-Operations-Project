@@ -232,5 +232,20 @@
         kubectl create secret generic github-token-secret --from-literal=token={{token}}   
     - name: Apply secret to argocd namespace
       command: >
-        kubectl create secret generic github-token-secret --from-literal=token={{token}} -n argocd   
+        kubectl create secret generic github-token-secret --from-literal=token={{token}} -n argocd 
+- name: Create FIP var
+  hosts: node1
+  become: yes
+  vars:
+    token: <FIP>
+  tasks:
+    - name: Apply secret to argo namespace
+      command: >
+        kubectl create secret generic FIP --from-literal=token={{token}} -n argo
+    - name: Apply secret to default namespace
+      command: >
+        kubectl create secret generic FIP --from-literal=token={{token}}   
+    - name: Apply secret to argocd namespace
+      command: >
+        kubectl create secret generic FIP --from-literal=token={{token}} -n argocd            
 
