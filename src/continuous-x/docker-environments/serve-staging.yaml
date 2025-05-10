@@ -24,6 +24,13 @@ services:
       - "8110:8000"  # for HTTP requests
       - "8101:8001"  # for GRPC requests
       - "8102:8002"  # for reporting metrics
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]  
 
   vllm:
     container_name: vllm-staging
