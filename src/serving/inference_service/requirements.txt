@@ -10,3 +10,4 @@ prometheus-client
 alibi-detect
 transformers
 cloudpickle
+lightning
