@@ -146,13 +146,13 @@ def predict_image(request: ImageRequest):
             Log.info(f"PROBABILITY: {probability}")
             Log.info(f"PREDICTED CLASS: {predicted_class}")
             
-        # # Update metrics
-        # confidence_histogram.observe(confidence)
-        # class_counter.labels(class_name=classes[predicted_class]).inc()
+        # Update metrics
+        confidence_histogram.observe(confidence)
+        class_counter.labels(class_name=classes[predicted_class]).inc()
 
-        # # Detect drift asynchronously
-        # x_np = image.squeeze(0).cpu().numpy()
-        # executor.submit(detect_drift_async, cd, x_np)
+        # Detect drift asynchronously
+        x_np = image.squeeze(0).cpu().numpy()
+        executor.submit(detect_drift_async, cd, x_np)
         return PredictionResponse(prediction=classes[predicted_class], probability=confidence)
 
     except Exception as e:
