@@ -44,8 +44,6 @@ spec:
             echo "Git clone failed after $MAX_RETRIES attempts."
             exit 1
           fi
-
-          sed -i 's/'"<FIP>"'/'"$FIP"'/g' /tmp/deeptrust/src/serving/prometheus/prometheus.yml
       volumeMounts:
       - name: workdir
         mountPath: /mnt/workspace
@@ -55,12 +53,7 @@ spec:
           valueFrom:
             secretKeyRef:
               name: github-token-secret
-              key: token
-        - name: FIP
-          valueFrom:
-            secretKeyRef:
-              name: FIP
-              key: token      
+              key: token 
                
 
 
