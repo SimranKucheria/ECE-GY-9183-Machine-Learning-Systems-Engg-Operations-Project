@@ -18,14 +18,17 @@
       shell: |
         docker compose -f /tmp/deeptrust/src/continuous-x/docker-environments/serve-canary.yaml up -d    
       environment:
-            FLOATING_IP: "A.B.C.D"        
+            FLOATING_IP: "A.B.C.D"  
+            HF_API_KEY: <Add Key>      
     - name: Install Serving Containers Staging
       shell: |
         docker compose -f /tmp/deeptrust/src/continuous-x/docker-environments/serve-staging.yaml up -d 
       environment:
-            FLOATING_IP: "A.B.C.D"        
+            FLOATING_IP: "A.B.C.D"    
+            HF_API_KEY: <Add Key>       
     - name: Install Serving Containers Production
       shell: |
         docker compose -f /tmp/deeptrust/src/continuous-x/docker-environments/serve-production.yaml up -d     
       environment:
-            FLOATING_IP: "A.B.C.D"                              
+            FLOATING_IP: "A.B.C.D"      
+            HF_API_KEY: <Add Key>                           
