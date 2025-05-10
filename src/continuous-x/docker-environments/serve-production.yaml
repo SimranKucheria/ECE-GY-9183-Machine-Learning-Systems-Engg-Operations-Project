@@ -12,7 +12,7 @@ services:
       file: ../../serving/docker-compose-serve.yaml
       service: triton_server
     ports:
-      - "8010:8010"  # for HTTP requests
+      - "8010:8000"  # for HTTP requests
       - "8001:8001"  # for GRPC requests
       - "8002:8002"  # for reporting metrics
 
@@ -26,7 +26,7 @@ services:
   jupyter:
     extends:
       file: ../../serving/docker-compose-serve.yaml
-      service: vllm
+      service: jupyter
     ports:
       - "8888:8888"  # for HTTP requests 
 
