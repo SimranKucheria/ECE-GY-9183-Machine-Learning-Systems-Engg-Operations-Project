@@ -8,6 +8,7 @@ spec:
     parameters:
     - name: endpoint-ip-train
     - name: endpoint-ip-serve
+    - name: epochs
 
   templates:
   - name: training-and-build
@@ -18,6 +19,8 @@ spec:
             parameters:
             - name: endpoint-ip
               value: "{{workflow.parameters.endpoint-ip-train}}"
+            - name: epochs
+              value: "{{workflow.parameters.epochs}}"
       - - name: rebuild-container
           template: trigger-build
           arguments:
@@ -34,6 +37,8 @@ spec:
     inputs:
       parameters:
       - name: endpoint-ip
+      - name: epochs
+
     outputs:
       parameters:
       - name: model-version
@@ -79,7 +84,7 @@ spec:
 
         # Trigger model training
         echo "[INFO] Triggering model training..." >&2
-        RESPONSE=$(curl -f -s -X POST http://{{inputs.parameters.endpoint-ip}}:8005/start-training-blip)
+        RESPONSE=$(curl -f -s --header 'Content-Type: application/json' -X POST http://{{inputs.parameters.endpoint-ip}}:8005/start-training-blip  --data '{"max_epoch":'{{inputs.parameters.epochs}}',"image_root":"/mnt/data/Flickr30k","ann_root":"/mnt/data/Flickr30k","coco_gt_root":"/mnt/data/Flickr30k","pretrained":"https://storage.googleapis.com/sfr-vision-language-research/BLIP/models/model_base_caption_capfilt_large.pth"}')
         CURL_EXIT_CODE=$?
 
         echo "[INFO] Training endpoint response was: $RESPONSE" >&2

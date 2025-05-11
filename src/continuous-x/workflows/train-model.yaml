@@ -8,6 +8,9 @@ spec:
     parameters:
     - name: endpoint-ip-train
     - name: endpoint-ip-serve
+    - name: epochs
+    - name: folds
+    - name: lr
 
   templates:
   - name: training-and-build
@@ -18,6 +21,12 @@ spec:
             parameters:
             - name: endpoint-ip
               value: "{{workflow.parameters.endpoint-ip-train}}"
+            - name: epochs
+              value: "{{workflow.parameters.epochs}}"
+            - name: folds
+              value: "{{workflow.parameters.folds}}" 
+            - name: lr
+              value: "{{workflow.parameters.lr}}"     
       - - name: rebuild-container
           template: trigger-build
           arguments:
@@ -34,6 +43,10 @@ spec:
     inputs:
       parameters:
       - name: endpoint-ip
+      - name: epochs
+      - name: folds
+      - name: lr
+
     outputs:
       parameters:
       - name: model-version
@@ -79,7 +92,8 @@ spec:
 
         # Trigger model training
         echo "[INFO] Triggering model training..." >&2
-        RESPONSE=$(curl -f -s -X POST http://{{inputs.parameters.endpoint-ip}}:8005/start-training-vit)
+        RESPONSE=$(curl -f -s --header 'Content-Type: application/json' -X POST http://{{inputs.parameters.endpoint-ip}}:8005/start-training-vit --data '{"num_epochs":'{{inputs.parameters.epochs}}',"n_fold":'{{inputs.parameters.fold}}',"num_workers":1,"run_name":"run_3","mlflow_model_name":"VITDeeptrustModel","lr":'{{inputs.parameters.lr}}'}') 
+                                                                                                                                                 
         CURL_EXIT_CODE=$?
 
         echo "[INFO] Training endpoint response was: $RESPONSE" >&2
