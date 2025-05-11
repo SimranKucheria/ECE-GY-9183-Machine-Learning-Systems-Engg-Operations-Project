@@ -9,6 +9,7 @@ spec:
     - name: source-environment
     - name: target-environment
     - name: model-version
+    - name: run-id
     - name: endpoint-ip
 
   templates:
@@ -25,6 +26,8 @@ spec:
               value: "{{workflow.parameters.target-environment}}"
             - name: model-version
               value: "{{workflow.parameters.model-version}}"
+            - name: run-id
+              value: "{{workflow.parameters.run-id}}"  
             - name: endpoint-ip
               value: "{{workflow.parameters.endpoint-ip}}"  
 
@@ -45,7 +48,7 @@ spec:
             - name: environment
               value: "{{workflow.parameters.target-environment}}"
             - name: model-version
-              value: "{{workflow.parameters.model-version}}"
+              value: "blip{{workflow.parameters.model-version}}"
       - - name: update-mlflow-alias
           template: set-mlflow-alias
           arguments:
@@ -62,6 +65,7 @@ spec:
       - name: target-environment
       - name: model-version
       - name: endpoint-ip
+      - name: run-id
       - name: port
         value: "{{= inputs.parameters.target-environment == 'canary' ? 5200 : 5000 }}"
     script:
@@ -101,7 +105,7 @@ spec:
 
           # Trigger model training
           echo "[INFO] Triggering model deploying" >&2
-          RESPONSE=$(curl -f -s --header 'Content-Type: application/json' --request POST http://{{inputs.parameters.endpoint-ip}}:{{port}}/update_BLIP --data '{"model_version":"'{{inputs.parameters.model-version}}'" }')
+          RESPONSE=$(curl -f -s --header 'Content-Type: application/json' --request POST http://{{inputs.parameters.endpoint-ip}}:{{port}}/update_BLIP --data '{"model_version":"'{{inputs.parameters.run-id}}'" }')
           CURL_EXIT_CODE=$?
 
           echo "[INFO] Model Update response was: $RESPONSE" >&2
@@ -162,6 +166,6 @@ spec:
             - name: environment
               value: "{{inputs.parameters.environment}}"
             - name: model-version
-              value: "blip{{inputs.parameters.model-version}}"
+              value: "{{inputs.parameters.model-version}}"
 
        
