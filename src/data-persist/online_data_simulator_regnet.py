@@ -9,7 +9,7 @@ from io import BytesIO
 from concurrent.futures import ThreadPoolExecutor
 
 # --- Configuration ---
-FASTAPI_URL = os.environ.get("FASTAPI_URL", "http://${FLOATING_IP}:8000")
+FASTAPI_URL = os.environ.get("FASTAPI_URL", "http://${FLOATING_IP}:8200/predict")
 DATA_DIR = "/data/AiVsHuman"
 IMAGES_DIR = os.path.join(DATA_DIR, "Images")
 CSV_PATH = os.path.join(DATA_DIR, "testing_online.csv")
