@@ -92,7 +92,7 @@ spec:
 
         # Trigger model training
         echo "[INFO] Triggering model training..." >&2
-        RESPONSE=$(curl -f -s --header 'Content-Type: application/json' -X POST http://{{inputs.parameters.endpoint-ip}}:8005/start-training-vit --data '{"num_epochs":'{{inputs.parameters.epochs}}',"n_fold":'{{inputs.parameters.fold}}',"num_workers":1,"run_name":"run_3","mlflow_model_name":"VITDeeptrustModel","lr":'{{inputs.parameters.lr}}'}') 
+        RESPONSE=$(curl -f -s --header 'Content-Type: application/json' -X POST http://{{inputs.parameters.endpoint-ip}}:8005/start-training-vit --data '{"num_epochs":'{{inputs.parameters.epochs}}',"n_fold":'{{inputs.parameters.folds}}',"num_workers":1,"run_name":"run_3","mlflow_model_name":"VITDeeptrustModel","lr":'{{inputs.parameters.lr}}'}') 
                                                                                                                                                  
         CURL_EXIT_CODE=$?
 
