@@ -4,7 +4,7 @@ services:
     container_name: online_data_simulator_blip
     image: python:3.11
     volumes:
-      - /mnt/project3/Flickr30k:/data/Flickr30k
+      - /mnt/object/Flickr30k:/data/Flickr30k
       - /tmp/deeptrust/src/data-persist/:/data/scripts
     environment:
       - TRITON_SERVER_URL=${FLOATING_IP}:8210
