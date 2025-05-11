@@ -162,18 +162,21 @@ def request_fastapi(image_path):
         
         encoded_str = base64.b64encode(image_bytes).decode("utf-8")
         payload = {"image": encoded_str}
-        
+
+        app.logger.info(f"Hitting Fast API")
         response = requests.post(f"{FASTAPI_SERVER_URL}/predict", json=payload)
         response.raise_for_status()
-        
+
+        app.logger.info(f"Fast API Response status code: {response.status_code}")
         result = response.json()
         predicted_class = result.get("prediction")
         probability = result.get("probability")
         
+        app.logger.info(f"Fast API Predicted class: {predicted_class}")
         return predicted_class, probability
 
     except Exception as e:
-        print(f"Error during inference: {e}")  
+        print(f"Error during FastAPI inference: {e}")  
         app.logger.error(f"Error during FastAPI inference: {e}")
         return None, None 
 
@@ -197,6 +200,7 @@ def request_triton(image_path):
         results = client.infer(model_name="caption", inputs=inputs, outputs=outputs)
         cap = results.as_numpy("CAPTION")
         caption_text = cap[0] if cap is not None and len(cap) > 0 else None
+        app.logger.info(f"TRITON Generated caption: {caption_text}")
         return caption_text
     except Exception as e:
         import traceback
@@ -205,6 +209,7 @@ def request_triton(image_path):
         return None 
     
 def request_vllm(description):
+
     try:
         prompt = f"""
             Generate indexing tags using the image description.
@@ -223,8 +228,10 @@ def request_vllm(description):
             "max_tokens": 300,
             "temperature": 0.7
         }
+        app.logger.info(f"Hitting vllm")
         response = requests.post(VLLM_SERVER_URL, headers=headers, json=data)
-        app.logger.info(response.json())
+        app.logger.info(f"vllm Response status code: {response.status_code}")
+        app.logger.info(f"vllm response is: {response.json()}")
         return response.json()
     except Exception as e:
         print(f"Error during vLLM inference: {e}")  
@@ -254,6 +261,7 @@ def upload():
             tags = request_vllm(description)
             if tags is not None:
                 tags = tags.get("choices")[0].get("text")  
+                app.logger.info(f"Predicted Tags: {tags}")
         else:
             tags = None
 
