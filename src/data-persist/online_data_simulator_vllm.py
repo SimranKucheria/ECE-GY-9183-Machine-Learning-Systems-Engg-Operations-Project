@@ -8,7 +8,7 @@ from pathlib import Path
 import requests
 
 # --- Configuration ---
-VLLM_SERVER_URL = os.environ.get("VLLM_SERVER_URL", "http://localhost:8000/v1/completions")
+VLLM_SERVER_URL = os.environ.get("VLLM_SERVER_URL", "http://${FLOATING_IP}:8205/v1/completions")
 LOAD_PATTERN = [int(x) for x in os.environ.get("LOAD_PATTERN", "1,2,3,5,3,2,1").split(",")]
 DELAY_BETWEEN_STEPS = int(os.environ.get("DELAY_BETWEEN_STEPS", "60"))
 REQUEST_TIMEOUT = int(os.environ.get("REQUEST_TIMEOUT", "5"))
