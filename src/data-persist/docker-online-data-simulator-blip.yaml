@@ -1,11 +1,11 @@
-  simulate-online-data:
+simulate-online-data:
     container_name: etl_simulate_online_data
     image: python:3.11
     depends_on:
       - fastapi_server
     volumes:
       - /mnt/project3/AiVsHuman:/data/AiVsHuman
-    working_dir: /data
+      - /tmp/deeptrust/src/data-persist/:/data/scripts
     environment:
       - FASTAPI_URL=http://${FLOATING_IP}:8000/
       - LOAD_PATTERN=1,2,3,5,3,2,1
@@ -18,4 +18,4 @@
         set -e
         pip install requests pillow
         echo "Running online data simulator..."
-        python3 /data/online_data_simulator_blip.py
+        python3 /data/scripts/online_data_simulator_blip.py
