@@ -1,12 +1,13 @@
 name: deeptrust_serve-production
 services:
   fastapi_server:
+    container_name: fastapi_server-production
     extends:
       file: ../../serving/docker-compose-serve.yaml
       service: fastapi_server
     ports:
       - "8000:8000"  # for HTTP requests
-     deploy:
+    deploy:
       resources:
         reservations:
           devices:
@@ -15,6 +16,7 @@ services:
               capabilities: [gpu] 
 
   triton_server:
+    container_name: triton_server-production 
     extends:
       file: ../../serving/docker-compose-serve.yaml
       service: triton_server
@@ -31,6 +33,7 @@ services:
               capabilities: [gpu]  
 
   vllm:
+    container_name: vllm-production 
     extends:
       file: ../../serving/docker-compose-serve.yaml
       service: vllm
@@ -48,6 +51,7 @@ services:
     ipc: host  
 
   jupyter:
+    container_name: jupyter-production 
     extends:
       file: ../../serving/docker-compose-serve.yaml
       service: jupyter
