@@ -3,7 +3,7 @@
     image: python:3.11
     volumes:
       - /mnt/project3/Flickr30k:/data/Flickr30k
-    working_dir: /data
+      - /tmp/deeptrust/src/data-persist/:/data/scripts
     environment:
       - FASTAPI_URL=http://${FLOATING_IP}:8000/
       - LOAD_PATTERN=1,2,3,5,3,2,1
@@ -16,4 +16,4 @@
       - -c
       - |
         pip install requests pillow pandas
-        python /data/online_data_simulator_regnet.py
+        python /data/scripts/online_data_simulator_regnet.py
