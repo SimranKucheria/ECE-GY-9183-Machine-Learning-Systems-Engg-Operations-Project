@@ -12,6 +12,9 @@
       - deploy-container-image.yaml
       - promote-model.yaml
       - train-model.yaml
+      - build-container-image-blip.yaml
+      - promote-model-blip.yaml
+      - train-model-blip.yaml
 
   tasks:
 
