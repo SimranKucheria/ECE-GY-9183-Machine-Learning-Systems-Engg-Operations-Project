@@ -31,7 +31,7 @@ spec:
             - name: TRITON_SERVER_URL
               value: "{{.Values.fastapi.externalIP}}:{{.Values.triton.port}}"
             - name: VLLM_SERVER_URL
-              value: "http://{{.Values.fastapi.externalIP}}:{{.Values.vllm.port}}"  
+              value: "http://{{.Values.fastapi.externalIP}}:{{.Values.vllm.port}}/v1/completions"  
                
 
           resources:
