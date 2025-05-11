@@ -7,7 +7,6 @@ simulate-online-data:
       - /mnt/project3/AiVsHuman:/data/AiVsHuman
       - /tmp/deeptrust/src/data-persist/:/data/scripts
     environment:
-      - FASTAPI_URL=http://${FLOATING_IP}:8000/
       - TRITON_SERVER_URL=http://${FLOATING_IP}:8000/triton
       - LOAD_PATTERN=1,2,3,5,3,2,1
       - DELAY_BETWEEN_STEPS=60
