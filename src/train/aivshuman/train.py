@@ -1,3 +1,4 @@
+import argparse
 import torch
 import torch.nn as nn
 import torchvision.transforms as transforms
@@ -20,8 +21,10 @@ import ray.train.lightning
 
 
 import mlflow
+from mlflow.tracking import MlflowClient
 from torchmetrics.classification import BinaryAccuracy, BinaryF1Score, BinaryAUROC
 import numpy as np
+import json
 
 # ray.init()
 # mlflow.set_tracking_uri("http://127.0.0.1:8080")
@@ -36,7 +39,7 @@ class CustomImageDataset(Dataset):
         return len(self.annotations)
 
     def __getitem__(self, idx):
-        img_path = os.path.join(self.img_dir, "Images/" + self.annotations.iloc[idx, 0])
+        img_path = os.path.join(self.img_dir, self.annotations.iloc[idx, 0])
         image = Image.open(img_path).convert("RGB")
         label = torch.tensor(int(self.annotations.iloc[idx, 1]))
         if self.transform:
@@ -75,7 +78,7 @@ def train_func(config):
     mlflow_logger = MLFlowLogger(
         experiment_name="vit-ai-detection",
         tracking_uri=mlflow.get_tracking_uri(),
-        run_name=f"fold-{config['n_fold']}"
+        run_name=config["run_name"]
     )
 
     mlflow.start_run(run_id=mlflow_logger.run_id)
@@ -167,6 +170,12 @@ def train_func(config):
     )
     
     # Trainer
+    if config["fsdp"]:
+        strategy = ray.train.lightning.RayFSDPStrategy(
+            fsdp_config={"fsdp": {"sharding_strategy": "FULL_SHARD"}}
+        )
+    else:
+        strategy = ray.train.lightning.RayDDPStrategy()
     trainer = L.Trainer(
         logger=mlflow_logger,
         callbacks=[early_stop, checkpoint_callback, ray.train.lightning.RayTrainReportCallback()],
@@ -175,7 +184,7 @@ def train_func(config):
         devices="auto",
         enable_progress_bar=True,
         log_every_n_steps=10,
-        strategy=ray.train.lightning.RayDDPStrategy(),
+        strategy=strategy,
         plugins = [ray.train.lightning.RayLightningEnvironment()]
     )
 
@@ -192,15 +201,80 @@ def train_func(config):
         warmup_epochs=config["warmup_epochs"]
     )
 
+    MODEL_NAME = config["mlflow_model_name"]
+
     mlflow.pytorch.log_model(
         pytorch_model=best_model,
         artifact_path="model",
-        registered_model_name="VITDeeptrustModel",
-        pip_requirements=["torch", "transformers", "lightning"]
+    #     registered_model_name=MODEL_NAME,
+    #     pip_requirements=["torch", "transformers", "lightning"]
     )
-    
+    client = MlflowClient()
+    run_id = mlflow.active_run().info.run_id
+    model_uri = f"runs:/{run_id}/model"
+    registered_model = mlflow.register_model(model_uri=model_uri, name=MODEL_NAME)
+    client.set_registered_model_alias(
+        name =MODEL_NAME,
+        alias = 'development',
+        version = registered_model.version,
+    )
+
+    results = {
+        "status": "success",
+        "new_model_version": run_id,
+        "model_name": MODEL_NAME,
+        "mv": registered_model.version, 
+        "model_uri": model_uri,
+    }
     
     mlflow.end_run()
+
+
+    print(results)
+
+    # print(results)
+    # Create directory if it doesn't exist
+    # os.makedirs("/mnt/data", exist_ok=True)
+    with open("/mnt/data/results_vit.json", "w") as f:
+        json.dump(results, f)
+
+def parse_args():
+    parser = argparse.ArgumentParser(description="Train ViT model for AI detection")
+    
+
+    parser.add_argument("--model-name", type=str, default="google/vit-base-patch16-224",
+                       help="Pretrained model name from HuggingFace")
+    
+    parser.add_argument("--img-size", type=int, nargs=2, default=[224, 224],
+                       help="Image size (height width)")
+    
+    parser.add_argument("--batch-size", type=int, default=32,
+                       help="Batch size for training")
+    
+    parser.add_argument("--lr", type=float, default=2e-5,
+                       help="Learning rate")
+    
+    parser.add_argument("--num-epochs", type=int, default=2,
+                       help="Number of training epochs")
+    
+    parser.add_argument("--warmup-epochs", type=int, default=0,
+                       help="Number of warmup epochs")
+    
+    parser.add_argument("--n-fold", type=int, default=0,
+                       help="Fold number for cross-validation (0-4)")
+    
+    parser.add_argument("--num-workers", type=int, default=1,
+                       help="Number of parallel training workers")
+    
+    parser.add_argument("--run-name", type=str, default="default_run",
+                       help="Name of the MLFlow run")
+    
+    parser.add_argument("--mlflow-model-name", type=str, default="VITDeeptrustModel",
+                       help="Name of the MLFlow model")
+    parser.add_argument("--fsdp", action="store_true",
+                       help="Use Fully Sharded Data Parallel (FSDP) for distributed training")
+    
+    return parser.parse_args()
 
 if __name__ == "__main__":
     # Configuration
@@ -209,34 +283,57 @@ if __name__ == "__main__":
     #     include_dashboard=True,  # Disable dashboard to reduce overhead
     #     ignore_reinit_error=True
     # )
+    args = parse_args()
 
     # print("Ray cluster resources:", ray.cluster_resources())
     files = os.listdir("/")
     print(files)
 
-    data_dir = os.getenv("AIVSHUMAN_DATA", "/mnt/AiVsHuman")
-    train_csv_path = os.path.join(data_dir, "training.csv")
+    data_dir = os.getenv("AIVSHUMAN_DATA", "/mnt/data/AiVsHuman")
+    train_csv_path = os.path.join(data_dir, "train.csv")
+    # config = {
+    #     # "labels": pd.read_csv(train_csv_path).iloc[:, 1:].copy(),
+    #     "train_csv_path": train_csv_path,
+    #     "img_dir": data_dir,
+    #     "model_name": "google/vit-base-patch16-224",
+    #     "img_size": (224, 224),
+    #     "batch_size": 32,  # Reduced for local execution
+    #     "lr": 2e-5,
+    #     "num_epochs": 2,
+    #     "warmup_epochs": 0,
+    #     "n_fold": 0,
+    #     "num_workers": 1  # Number of parallel training workers
+    # }
+
     config = {
-        # "labels": pd.read_csv(train_csv_path).iloc[:, 1:].copy(),
         "train_csv_path": train_csv_path,
         "img_dir": data_dir,
-        "model_name": "google/vit-base-patch16-224",
-        "img_size": (224, 224),
-        "batch_size": 32,  # Reduced for local execution
-        "lr": 2e-5,
-        "num_epochs": 10,
-        "warmup_epochs": 0,
-        "n_fold": 0,
-        "num_workers": 1  # Number of parallel training workers
+        "model_name": args.model_name,
+        "img_size": tuple(args.img_size),
+        "batch_size": args.batch_size,
+        "lr": args.lr,
+        "num_epochs": args.num_epochs,
+        "warmup_epochs": args.warmup_epochs,
+        "n_fold": args.n_fold,
+        "num_workers": args.num_workers,
+        "run_name": args.run_name,
+        "mlflow_model_name": args.mlflow_model_name,
+        "fsdp": args.fsdp
     }
 
     try:
-
-        scaling_config = ScalingConfig(
-            num_workers=config.get("num_workers", 1),  
-            use_gpu=True, 
-            resources_per_worker={"CPU": 8, "GPU": 1}  # 
-        )
+        if args.fsdp:
+            scaling_config = ScalingConfig(
+                num_workers=config.get("num_workers", 2),  
+                use_gpu=True, 
+                resources_per_worker={"CPU": 8, "GPU": 1},
+            )
+        else:
+            scaling_config = ScalingConfig(
+                num_workers=config.get("num_workers", 1),  
+                use_gpu=True, 
+                resources_per_worker={"CPU": 8, "GPU": 1}  # 
+            )
         
         run_config = RunConfig(storage_path="s3://ray")
         

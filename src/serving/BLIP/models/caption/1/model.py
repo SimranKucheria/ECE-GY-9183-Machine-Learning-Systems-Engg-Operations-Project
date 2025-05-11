@@ -7,7 +7,7 @@ import torch
 import torchvision.transforms as transforms
 from torchvision.transforms.functional import InterpolationMode
 import triton_python_backend_utils as pb_utils
-from utils import blip_decoder
+from train.utils import blip_decoder
 
 class TritonPythonModel:
     
