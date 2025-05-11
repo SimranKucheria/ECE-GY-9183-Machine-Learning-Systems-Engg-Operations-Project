@@ -14,9 +14,14 @@ import logging
 import tritonclient.http as httpclient # for making requests to Triton
 from flask import jsonify 
 
-public_ip = requests.get("http://169.254.169.254/latest/meta-data/public-ipv4").text.strip()
+app = Flask(__name__)
 
+public_ip = requests.get("http://169.254.169.254/latest/meta-data/public-ipv4").text.strip()
+app.logger.info(f"Public IP: {public_ip}")
 # Authenticate to MinIO object store
+if public_ip is '' or None:
+    public_ip = os.environ['MINIO_URL']
+    app.logger.info(f"Public IP is now: {public_ip}")
 s3 = boto3.client(
     's3',
     # endpoint_url=os.environ['MINIO_URL'],  # e.g. 'http://minio:9000'
@@ -25,8 +30,6 @@ s3 = boto3.client(
     aws_secret_access_key=os.environ['MINIO_PASSWORD'],
     region_name='us-east-1'  # required for the boto client but not used by MinIO
 )
-
-app = Flask(__name__)
 
 os.makedirs(os.path.join(app.instance_path, 'uploads'), exist_ok=True)
 
