@@ -1,7 +1,7 @@
 apiVersion: argoproj.io/v1alpha1
 kind: WorkflowTemplate
 metadata:
-  name: promote-model
+  name: promote-model-blip
 spec:
   entrypoint: promote-flow
   arguments:
