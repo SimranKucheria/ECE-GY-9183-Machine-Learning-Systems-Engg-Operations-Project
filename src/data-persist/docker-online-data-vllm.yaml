@@ -1,0 +1,21 @@
+simulate-online-vllm:
+  container_name: etl_simulate_online_vllm
+  image: python:3.11
+  depends_on:
+    - vllm_server
+  volumes:
+    - /mnt/project3/Flickr30k:/data/Flickr30k
+    - /tmp/deeptrust/src/data-persist/:/data/scripts
+  environment:
+    - VLLM_SERVER_URL=http://${FLOATING_IP}:8000/v1/completions
+    - LOAD_PATTERN=1,2,3,5,3,2,1
+    - DELAY_BETWEEN_STEPS=60
+    - REQUEST_TIMEOUT=5
+  command:
+    - bash
+    - -c
+    - |
+      set -e
+      pip install requests
+      echo "Running vLLM online data simulator..."
+      python3 /data/scripts/online_data_simulator_vllm.py

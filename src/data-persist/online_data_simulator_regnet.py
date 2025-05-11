@@ -1,6 +1,5 @@
 import os
 import time
-import random
 import base64
 import logging
 import requests
@@ -10,7 +9,7 @@ from io import BytesIO
 from concurrent.futures import ThreadPoolExecutor
 
 # --- Configuration ---
-FASTAPI_URL = os.environ.get("FASTAPI_URL", "http://${FLOATING_IP}:8000/")
+FASTAPI_URL = os.environ.get("FASTAPI_URL", "http://${FLOATING_IP}:8000")
 DATA_DIR = "/data/AiVsHuman"
 IMAGES_DIR = os.path.join(DATA_DIR, "Images")
 CSV_PATH = os.path.join(DATA_DIR, "testing_online.csv")
@@ -40,21 +39,25 @@ def load_and_encode_image(image_path):
         return None
 
 # --- Request sending ---
-def send_request(image_path, label):
+def send_request(image_path):
     encoded_str = load_and_encode_image(image_path)
     if not encoded_str:
-        return False
+        return False, None, None
     payload = {"image": encoded_str}
     try:
-        resp = requests.post(FASTAPI_URL, json=payload, timeout=REQUEST_TIMEOUT)
-        if resp.status_code == 200:
-            return True
-        else:
-            logger.warning(f"Non-200 response for {image_path}: {resp.status_code} {resp.text}")
-            return False
+        url = f"{FASTAPI_URL}/predict"
+        logger.info(f"Hitting FastAPI at {url}")
+        resp = requests.post(url, json=payload, timeout=REQUEST_TIMEOUT)
+        resp.raise_for_status()
+        logger.info(f"FastAPI Response status code: {resp.status_code}")
+        result = resp.json()
+        predicted_class = result.get("prediction")
+        probability = result.get("probability")
+        logger.info(f"FastAPI Predicted class: {predicted_class}, Probability: {probability}")
+        return True, predicted_class, probability
     except Exception as e:
-        logger.warning(f"Request failed for {image_path}: {e}")
-        return False
+        logger.error(f"Error during FastAPI inference for {image_path}: {e}")
+        return False, None, None
 
 # --- Continuous request worker ---
 def send_continuous_requests(df, duration_sec):
@@ -63,10 +66,11 @@ def send_continuous_requests(df, duration_sec):
     while time.time() - start < duration_sec:
         row = df.sample(1).iloc[0]
         image_file = os.path.join(IMAGES_DIR, row["file_name"])
-        label = row["label"]
-        ok = send_request(image_file, label)
+        label = row["label"]  # Not sent, but available for local evaluation if needed
+        ok, predicted_class, probability = send_request(image_file)
         if ok:
             successes += 1
+            # Optionally, compare predicted_class with label here for accuracy stats
         else:
             failures += 1
         time.sleep(0.1)  # Small delay to avoid hammering the server
