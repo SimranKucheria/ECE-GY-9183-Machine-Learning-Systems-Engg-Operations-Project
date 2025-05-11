@@ -105,7 +105,7 @@ spec:
 
           # Trigger model training
           echo "[INFO] Triggering model deploying" >&2
-          RESPONSE=$(curl -f -s --header 'Content-Type: application/json' --request POST http://{{inputs.parameters.endpoint-ip}}:{{port}}/update_VIT --data '{"model_version":"'{{inputs.parameters.run-id}}'" }')
+          RESPONSE=$(curl -f -s --header 'Content-Type: application/json' --request POST http://{{inputs.parameters.endpoint-ip}}:{{inputs.parameters.port}}/update_VIT --data '{"model_version":"'{{inputs.parameters.run-id}}'" }')
           CURL_EXIT_CODE=$?
 
           echo "[INFO] Model Update response was: $RESPONSE" >&2
