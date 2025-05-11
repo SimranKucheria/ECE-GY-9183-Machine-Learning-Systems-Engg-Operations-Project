@@ -199,7 +199,7 @@ def request_triton(image_path):
         outputs.append(httpclient.InferRequestedOutput("CAPTION", binary_data=False))
         results = client.infer(model_name="caption", inputs=inputs, outputs=outputs)
         cap = results.as_numpy("CAPTION")
-        caption_text = cap[0] if cap is not None and len(cap) > 0 else None
+        caption_text = cap[0][0] if cap is not None and len(cap) > 0 else None
         app.logger.info(f"TRITON Generated caption: {caption_text}")
         return caption_text
     except Exception as e:
@@ -209,6 +209,7 @@ def request_triton(image_path):
         return None 
     
 def request_vllm(description):
+
     try:
         prompt = f"""
             Generate indexing tags using the image description.
