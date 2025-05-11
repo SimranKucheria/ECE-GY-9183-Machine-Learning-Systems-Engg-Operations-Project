@@ -230,8 +230,8 @@ def request_vllm(description):
         }
         app.logger.info(f"Hitting vllm")
         response = requests.post(VLLM_SERVER_URL, headers=headers, json=data)
-        app.logger.info(response.status_code)
-        app.logger.info(response.json())
+        app.logger.info(f"vllm Response status code: {response.status_code}")
+        app.logger.info(f"vllm response is: {response.json()}")
         return response.json()
     except Exception as e:
         print(f"Error during vLLM inference: {e}")  
@@ -261,6 +261,7 @@ def upload():
             tags = request_vllm(description)
             if tags is not None:
                 tags = tags.get("choices")[0].get("text")  
+                app.logger.info(f"Predicted Tags: {tags}")
         else:
             tags = None
 
