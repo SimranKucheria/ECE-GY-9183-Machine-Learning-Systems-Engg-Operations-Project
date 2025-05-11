@@ -30,7 +30,7 @@ spec:
           - name: MINIO_PASSWORD
             value: "your-secret-key"  
           - name: TRITON_SERVER_URL
-            value: "http://{{.Values.fastapi.externalIP}}:{{.Values.triton.port}}"
+            value: "{{.Values.fastapi.externalIP}}:{{.Values.triton.port}}"
           - name: VLLM_SERVER_URL
             value: "http://{{.Values.fastapi.externalIP}}:{{.Values.vllm.port}}"  
             
