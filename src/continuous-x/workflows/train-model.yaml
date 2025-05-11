@@ -51,10 +51,10 @@ spec:
       parameters:
       - name: model-version
         valueFrom:
-          path: /outputs/model-version
+          path: outputs/model-version
       - name: run-id
         valueFrom:
-          path: /outputs/run-id  
+          path: outputs/run-id  
     script:
       image: alpine:3.18
       command: [sh]
@@ -113,8 +113,9 @@ spec:
           exit 1
         fi
 
-        echo -n "$RUNID" > /outputs/run-id
-        echo -n "$VERSION" > /outputs/model-version
+        mkdir outputs
+        echo -n "$RUNID" > outputs/run-id
+        echo -n "$VERSION" > outputs/model-version
 
   - name: trigger-build
     inputs:

@@ -26,6 +26,7 @@ logger = logging.get_logger(__name__)
 def train_model(args, config):
 
     mlflow.start_run()       
+    mlflow.set_experiment('blip-captioning')
     MODEL_NAME = config.get('mlflow_model_name', 'blip-captioning')
     run_id = mlflow.active_run().info.run_id
     mlflow.log_params(config)
