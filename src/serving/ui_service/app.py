@@ -14,11 +14,13 @@ import logging
 import tritonclient.http as httpclient # for making requests to Triton
 from flask import jsonify 
 
+public_ip = requests.get("http://169.254.169.254/latest/meta-data/public-ipv4").text.strip()
 
 # Authenticate to MinIO object store
 s3 = boto3.client(
     's3',
-    endpoint_url=os.environ['MINIO_URL'],  # e.g. 'http://minio:9000'
+    # endpoint_url=os.environ['MINIO_URL'],  # e.g. 'http://minio:9000'
+    endpoint_url=f"http://{public_ip}:9000",
     aws_access_key_id=os.environ['MINIO_USER'],
     aws_secret_access_key=os.environ['MINIO_PASSWORD'],
     region_name='us-east-1'  # required for the boto client but not used by MinIO
