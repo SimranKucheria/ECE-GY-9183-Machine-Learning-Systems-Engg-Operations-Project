@@ -1,6 +1,7 @@
 import os
 import time
 import random
+import logging
 import base64
 import json
 import numpy as np
@@ -10,10 +11,12 @@ from PIL import Image
 from io import BytesIO
 import tritonclient.http as httpclient
 
-from flask import Flask
-
-# Flask app for logging
-app = Flask(__name__)
+# --- Logging setup --
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s [%(levelname)s] %(message)s"
+)
+logger = logging.getLogger("online_data_simulator")
 
 TRITON_SERVER_URL = os.environ.get("TRITON_SERVER_URL", "${FLOATING_IP}:8210")
 LOAD_PATTERN = [int(x) for x in os.environ.get("LOAD_PATTERN", "1,2,3,5,3,2,1").split(",")]
@@ -33,10 +36,10 @@ def load_image_paths_and_captions(json_path):
             image_path = os.path.join(IMAGES_DIR, Path(item["image"]).name)
             if os.path.exists(image_path):
                 samples.append((image_path, random.choice(item["caption"])))
-        app.logger.info(f"Loaded {len(samples)} image-caption pairs from {json_path}")
+        logger.info(f"Loaded {len(samples)} image-caption pairs from {json_path}")
         return samples
     except Exception as e:
-        app.logger.error(f"Failed to load image paths and captions: {e}")
+        logger.error(f"Failed to load image paths and captions: {e}")
         return []
 
 def request_triton(image_path, caption=None):
@@ -44,7 +47,7 @@ def request_triton(image_path, caption=None):
     try:
         client = httpclient.InferenceServerClient(url=TRITON_SERVER_URL, verbose=False)
         if not client.is_server_live():
-            app.logger.error("Triton server is not live.")
+            logger.error("Triton server is not live.")
             return None
 
         with open(image_path, "rb") as f:
@@ -68,14 +71,14 @@ def request_triton(image_path, caption=None):
         cap = results.as_numpy("CAPTION")
         generated_caption = cap[0] if cap is not None and len(cap) > 0 else None
 
-        app.logger.info(f"Triton generated caption: {generated_caption}")
+        logger.info(f"Triton generated caption: {generated_caption}")
         if caption:
-            app.logger.info(f"Original caption: {caption}")
+            logger.info(f"Original caption: {caption}")
         return generated_caption
     except Exception as e:
         import traceback
-        app.logger.error(f"Triton inference failed: {e}")
-        app.logger.error(traceback.format_exc())
+        logger.error(f"Triton inference failed: {e}")
+        logger.error(traceback.format_exc())
         return None
 
 def send_continuous_requests(samples, duration_sec):
@@ -91,15 +94,15 @@ def run_load_stage(concurrent_workers, duration_sec, samples):
             executor.submit(send_continuous_requests, samples, duration_sec)
 
 if __name__ == "__main__":
-    app.logger.info("Waiting for Triton server to be ready...")
+    logger.info("Waiting for Triton server to be ready...")
     time.sleep(10)
 
     samples = load_image_paths_and_captions(ONLINE_JSON)
     if not samples:
-        app.logger.error("No valid images found in online test set.")
+        logger.error("No valid images found in online test set.")
         raise ValueError("No valid images found in online test set.")
 
     for load in LOAD_PATTERN:
-        app.logger.info(f"Simulating load with {load} concurrent requests...")
+        logger.info(f"Simulating load with {load} concurrent requests...")
         run_load_stage(load, DELAY_BETWEEN_STEPS, samples)
-        app.logger.info(f"Stage with {load} workers complete.")
+        logger.info(f"Stage with {load} workers complete.")
