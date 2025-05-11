@@ -25,3 +25,6 @@ triton:
 
 vllm:
   port: 8005   
+
+kvm:
+  externalIP: ""   

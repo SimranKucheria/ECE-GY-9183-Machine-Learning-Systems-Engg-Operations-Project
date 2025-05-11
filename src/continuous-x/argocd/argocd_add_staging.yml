@@ -34,7 +34,9 @@
     - name: Set FastApi External API
       set_fact:
         fastapi_external_ip: "A.B.C.D"
-
+    - name: Set K8s External API
+      set_fact:
+        k8s_external_ip: "A.B.C.D"
     - name: Create deeptrust-staging namespace if missing
       command: kubectl create namespace deeptrust-staging
       register: ns_create
@@ -57,6 +59,7 @@
         --dest-namespace "" \
         --helm-set-string service.externalIP={{ external_ip }} \
         --helm-set-string fastapi.externalIP={{ fastapi_external_ip }} \
+        --helm-set-string kvm.externalIP={{ k8s_external_ip }} \
         --sync-policy automated --self-heal \
         --port-forward --port-forward-namespace={{ argocd_namespace }}
 
@@ -64,8 +67,8 @@
       when: app_check.rc == 0
       command: >
         argocd app set {{ app_name }} \
-        --helm-set-string service.externalIP={{ external_ip }} \
-        --helm-set-string fastapi.externalIP={{ fastapi_external_ip }} \
+        --helm-set-string service.externalIP={{ external_ip }} \--helm-set-string fastapi.externalIP={{ fastapi_external_ip }} \ 
+        --helm-set-string kvm.externalIP={{ k8s_external_ip }} \
         --port-forward --port-forward-namespace={{ argocd_namespace }}
 
     - name: Display ArgoCD app status

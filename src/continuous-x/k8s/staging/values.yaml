@@ -24,4 +24,7 @@ triton:
   port: 8110
 
 vllm:
-  port: 8105       
+  port: 8105    
+  
+kvm:
+  externalIP: ""        
