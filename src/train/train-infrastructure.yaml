@@ -47,6 +47,7 @@ services:
     shm_size: '12g'
     volumes:
       - ray_tmp:/tmp/ray
+      - /mnt/run_data:/mnt
     environment:
       - RAY_GRAFANA_HOST=http://grafana:3000
       - RAY_GRAFANA_IFRAME_HOST=http://${HOST_IP}:3000
@@ -77,7 +78,7 @@ services:
     volumes:
       - grafana_storage:/var/lib/grafana
       - ray_tmp:/tmp/ray:ro
-      - /mnt/object:/mnt
+      - Project3Data:/mnt/data
     environment:
       - GF_INSTALL_PLUGINS=grafana-piechart-panel
       - GF_PATHS_PROVISIONING=/tmp/ray/session_latest/metrics/grafana/provisioning
@@ -111,9 +112,33 @@ services:
       - MLFLOW_TRACKING_URI=http://${FLOATING_IP}:8000/
     shm_size: '12g'
     volumes:
-      - /mnt/object:/mnt
+      - Project3Data:/mnt/data
+      - /mnt/run_data:/mnt
+    user: root
     depends_on:
       - ray-head
+
+  # ray-worker-2:
+  #   image: rayproject/ray:2.42.1-gpu
+  #   container_name: ray-worker-1
+  #   command: ["ray", "start", "--address=ray-head:6379", "--num-cpus=32", "--num-gpus=1", "--block"]
+  #   deploy:
+  #     resources:
+  #       reservations:
+  #         devices:
+  #           - driver: "nvidia"
+  #             capabilities: ["gpu"]
+  #             device_ids: ["1"]
+  #   environment:
+  #     - AWS_ACCESS_KEY_ID=your-access-key     # for MinIO access
+  #     - AWS_SECRET_ACCESS_KEY=${MINIO_PW}
+  #     - AWS_ENDPOINT_URL=http://${FLOATING_IP}:9000
+  #     - MLFLOW_TRACKING_URI=http://${FLOATING_IP}:8000/
+  #   shm_size: '12g'
+  #   volumes:
+  #     - Project3Data:/mnt/data
+  #   depends_on:
+  #     - ray-head
   
   jupyter-all:
     build:
@@ -130,7 +155,8 @@ services:
       - "8888:8888"
     volumes:
       - ~/work/train:/home/jovyan/work/
-      - /mnt/object:/mnt/
+      - Project3Data:/mnt/data
+      - /mnt/run_data:/mnt
     environment:
       - MLFLOW_TRACKING_URI=http://${FLOATING_IP}:8000/
       - RAY_ADDRESS=http://ray-head:8265/
@@ -153,12 +179,38 @@ services:
       - "8005:8005"
     volumes:
       # - ~/work/train:/home/jovyan/work/
-      - /mnt/object:/mnt/
+      - Project3Data:/mnt/data
+      - /mnt/run_data:/mnt
     environment:
       - MLFLOW_TRACKING_URI=http://${FLOATING_IP}:8000/
       - RAY_ADDRESS=http://ray-head:8265/
     shm_size: 16G
+    user: root
     container_name: train-app
+
+  app-for-training-blip:
+    build:
+      context: .
+      dockerfile: Dockerfile.train_app_blip
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+    ports:
+      - "8004:8004"
+    volumes:
+      # - ~/work/train:/home/jovyan/work/
+      - Project3Data:/mnt/data
+      - /mnt/run_data:/mnt
+    environment:
+      - MLFLOW_TRACKING_URI=http://${FLOATING_IP}:8000/
+      - RAY_ADDRESS=http://ray-head:8265/
+    shm_size: 16G
+    user: root
+    container_name: train-app-blip
   # ray-worker-2:
   #   image: rayproject/ray:2.42.1-gpu
   #   container_name: ray-worker-1
@@ -204,3 +256,5 @@ services:
 volumes:
   grafana_storage:
   ray_tmp:
+  Project3Data:
+    external: true

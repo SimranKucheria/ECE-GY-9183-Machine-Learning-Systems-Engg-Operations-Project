@@ -1,13 +1,15 @@
-FROM python:3.10-slim
+FROM python:3.10-slim-bullseye
 
 USER root
 
 WORKDIR /app
 
 # Install system dependencies (if needed)
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    curl \
-    && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+        ca-certificates \
+        openjdk-11-jdk && \
+    rm -rf /var/lib/apt/lists/*
 
 # Copy everything from the current directory (train/) into /app in the container
 COPY . /app
@@ -28,7 +30,7 @@ RUN pip install --pre --no-cache-dir \
     fastapi \
     "uvicorn[standard]"
 
-EXPOSE 8005
+EXPOSE 8004
 
 # Start FastAPI server (app.py must contain app = FastAPI())
-CMD ["uvicorn", "app:app", "--host", "0.0.0.0", "--port", "8005"]
+CMD ["uvicorn", "server:app", "--host", "0.0.0.0", "--port", "8004"]
