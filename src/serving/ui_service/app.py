@@ -16,16 +16,16 @@ from flask import jsonify
 
 app = Flask(__name__)
 
-public_ip = requests.get("http://169.254.169.254/latest/meta-data/public-ipv4").text.strip()
-app.logger.info(f"Public IP: {public_ip}")
+# public_ip = requests.get("http://169.254.169.254/latest/meta-data/public-ipv4").text.strip()
+# app.logger.info(f"Public IP: {public_ip}")
 # Authenticate to MinIO object store
 # if public_ip == '' or None:
 #     public_ip = os.environ['MINIO_URL']
 #     app.logger.info(f"Public IP is now: {public_ip}")
 s3 = boto3.client(
     's3',
-    # endpoint_url=os.environ['MINIO_URL'],  # e.g. 'http://minio:9000'
-    endpoint_url=f"http://{public_ip}:9000",
+    endpoint_url=os.environ['MINIO_URL'],  # e.g. 'http://minio:9000'
+    # endpoint_url=f"http://{MINIO_URL}:9000",
     aws_access_key_id=os.environ['MINIO_USER'],
     aws_secret_access_key=os.environ['MINIO_PASSWORD'],
     region_name='us-east-1'  # required for the boto client but not used by MinIO
