@@ -12,7 +12,7 @@ MINIO_URL = os.environ['MINIO_URL']
 MINIO_ACCESS_KEY = os.environ['MINIO_USER']
 MINIO_SECRET_KEY = os.environ['MINIO_PASSWORD']
 
-PROJECT_NAME = "DeepTrust Random Sample"  # Updated to match your latest script
+PROJECT_NAME = "DeepTrust"  # Updated to match your latest script
 
 # --- DEFAULT ARGS ---
 default_args = {
@@ -112,7 +112,7 @@ with DAG(
     start_date=datetime.today() - timedelta(days=1),
     schedule_interval="@daily",
     catchup=False,
-    description="Process human-labeled data from Label Studio and move to MinIO buckets",
+    description="Process data from Label Studio and move to MinIO buckets",
 ) as dag:
 
     get_results_task = PythonOperator(
