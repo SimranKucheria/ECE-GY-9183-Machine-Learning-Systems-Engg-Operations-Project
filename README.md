@@ -292,7 +292,7 @@ optional "difficulty" points you are attempting. -->
 - **Persistent storage**:
 We provisioned persistent storage on Chameleon with two main volumes: /mnt/block1 and /mnt/block2. On /mnt/block1, we store MLflow experiment artifacts (mlflow-artifacts), Ray distributed computing data (ray), and finalized production models and data (production). On /mnt/block2, we store the persistent PostgreSQL database (postgres) used for experiment tracking. This setup ensures all model artifacts, experiment logs, and production data are reliably saved and accessible throughout the project lifecycle.
 
-![Persistent Storage](images/Persistent Storage.jpeg)
+![Persistent Storage](images/Persistent%20Storage.jpeg)
 
 - **Offline data**: 
 For offline data evaluation, we first verified the integrity of the AiVsHuman images by checking that all files were present, readable, and in the correct RGB format. Any missing or corrupted images were identified and logged. We then examined the class distributions after splitting the datasets to ensure that training, validation, and test sets were balanced and representative, printing summary statistics to confirm that the stratified sampling worked correctly.
