@@ -3,7 +3,7 @@
   hosts: node1
   become: yes
   vars:
-    repo_url: "https://<TOKEN>@github.com/SimranKucheria/ECE-GY-9183-Machine-Learning-Systems-Engg-Operations-Project.git"
+    repo_url: "https://github.com/SimranKucheria/ECE-GY-9183-Machine-Learning-Systems-Engg-Operations-Project.git"
     repo_dest: /tmp/deeptrust
 
   tasks:
@@ -17,7 +17,7 @@
   hosts: node1
   become: yes
   vars:
-    repo_url: "https://<TOKEN>@github.com/SimranKucheria/ECE-GY-9183-Machine-Learning-Systems-Engg-Operations-Project.git"
+    repo_url: "https://github.com/SimranKucheria/ECE-GY-9183-Machine-Learning-Systems-Engg-Operations-Project.git"
     repo_dest: /tmp/deeptrust
    
 
@@ -36,4 +36,9 @@
       shell: |
         docker compose -f /tmp/deeptrust/src/data-persist/docker-environments/docker-online-data-simulator_blip.yaml up -d    
       environment:
-            FLOATING_IP: "A.B.C.D"            
+            FLOATING_IP: "A.B.C.D" 
+    - name: Run Online testing for 3rd model
+      shell: |
+        docker compose -f /tmp/deeptrust/src/data-persist/docker-environments/docker-online-data-vllm.yaml up -d    
+      environment:
+            FLOATING_IP: "A.B.C.D"                    

@@ -218,19 +218,20 @@
       debug:
         var: apply_result.stdout
 
-- name: Create Github Token Secret
-  hosts: node1
-  become: yes
-  vars:
-    token: <TOKEN>
-  tasks:
-    - name: Apply secret to argo namespace
-      command: >
-        kubectl create secret generic github-token-secret --from-literal=token={{token}} -n argo
-    - name: Apply secret to default namespace
-      command: >
-        kubectl create secret generic github-token-secret --from-literal=token={{token}}   
-    - name: Apply secret to argocd namespace
-      command: >
-        kubectl create secret generic github-token-secret --from-literal=token={{token}} -n argocd       
+#Commented as REPO is now public
+# - name: Create Github Token Secret
+#   hosts: node1
+#   become: yes
+#   vars:
+#     token: <TOKEN>
+#   tasks:
+#     - name: Apply secret to argo namespace
+#       command: >
+#         kubectl create secret generic github-token-secret --from-literal=token={{token}} -n argo
+#     - name: Apply secret to default namespace
+#       command: >
+#         kubectl create secret generic github-token-secret --from-literal=token={{token}}   
+#     - name: Apply secret to argocd namespace
+#       command: >
+#         kubectl create secret generic github-token-secret --from-literal=token={{token}} -n argocd       
 

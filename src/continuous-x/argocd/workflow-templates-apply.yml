@@ -3,7 +3,7 @@
   hosts: node1
   become: yes
   vars:
-    repo_url: "https://<TOKEN>@github.com/SimranKucheria/ECE-GY-9183-Machine-Learning-Systems-Engg-Operations-Project.git"
+    repo_url: "https://github.com/SimranKucheria/ECE-GY-9183-Machine-Learning-Systems-Engg-Operations-Project.git"
     repo_dest: /tmp/deeptrust/src/continuous-x
     workflow_dir: workflows
     argo_namespace: argo
