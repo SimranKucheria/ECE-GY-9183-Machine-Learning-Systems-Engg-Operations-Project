@@ -94,7 +94,7 @@ def run_load_stage(concurrent_workers, duration_sec, samples):
             executor.submit(send_continuous_requests, samples, duration_sec)
 
 if __name__ == "__main__":
-    logger.info("Waiting for Triton server to be ready...")
+    logger.info("Waiting for Triton server to be ready")
     time.sleep(10)
 
     samples = load_image_paths_and_captions(ONLINE_JSON)

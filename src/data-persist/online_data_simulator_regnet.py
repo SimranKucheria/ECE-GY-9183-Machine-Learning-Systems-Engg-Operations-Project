@@ -107,6 +107,6 @@ def main():
     logger.info("Simulation complete.")
 
 if __name__ == "__main__":
-    logger.info("Waiting 10s for FastAPI server to be ready...")
+    logger.info("Waiting 10s for FastAPI server to be ready")
     time.sleep(10)
     main()
