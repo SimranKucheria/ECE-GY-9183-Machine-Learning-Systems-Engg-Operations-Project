@@ -89,13 +89,13 @@ conditions under which it may be used. -->
 how much/when, justification. Include compute, floating IPs, and persistent storage. 
 The table below shows an example, it is not a recommendation. -->
 
-| Requirement                                             | How many/when                    | Justification                            |
-| ------------------------------------------------------- | -------------------------------- | ---------------------------------------- |
-| `m1.medium` VMs                                         | 3 for entire project duration    | Used to expose the application using K8s |
-| 2 Baremtals (1 with 2 GPUs, 1 with 1 liqid1 and liqid2) | 6 hour block thrice a week       | Training/Retraining/Serving              |
-| Floating IPs  - 3                                       | 1 for K8s, 2 for Baremetals      | Expose all instances                     |
-| Fast SSD(Persistent Storage)                            | 50Gb Duration of entire project  | Used for block storage                   |
-| Fast SSD(Object Storage)                                | 100Gb Duration of entire project | Used for object storage                  |
+| Requirement                             | How many/when                                     | Justification |
+| --------------------------------------- | ------------------------------------------------- | ------------- |
+| `m1.medium` VMs                         | 3 for entire project duration                     | Used to expose the application using K8s           |
+| 2 Baremetals (1 with 2 GPUs, 1 with 1 GPU)   | 6 hour block thrice a week   | Training/Retraining/Serving           |
+| Floating IPs  - 3 | 1 for K8s, 2 for Baremetals | Expose all instances          |
+| Fast SSD(Persistent Storage)            | 50Gb Duration of entire project  | Used for block storage|
+| Fast SSD(Object Storage)            | 100Gb Duration of entire project  | Used for object storage|
 
 ### Detailed design plan
 
@@ -342,22 +342,30 @@ optional "difficulty" points you are attempting. -->
 - Cloud-native: All code was containerised by using docker compose files to pull up relevant code and start containers for them.
 ![Architecture Diagram](images/Updated%20Architecture.png)
 
-The entrypoint to continuous-x provisioning starts in set-up.ipynb
-[https://github.com/SimranKucheria/ECE-GY-9183-Machine-Learning-Systems-Engg-Operations-Project/blob/58d6a6d918183fc1195fe35efa6bde3f1ae06b96/src/continuous-x/set-up.ipynb] 
-The notebook conatins all the commands to provision and set-up resources/run pipelines.
+The entrypoint to continuous-x provisioning starts in [set-up.ipynb](src/continuous-x/set-up.ipynb)
+The notebook contains all the commands to provision and set-up resources/run pipelines.
 
-We first use Terraform tp provision compute (Command in the provision-terraform.sh [https://github.com/SimranKucheria/ECE-GY-9183-Machine-Learning-Systems-Engg-Operations-Project/blob/58d6a6d918183fc1195fe35efa6bde3f1ae06b96/src/continuous-x/provision-terraform.sh]) 
+We first use Terraform to provision compute resources/object and block storages in [provision-terraform.sh](src/continuous-x/provision-terraform.sh) 
+Then we set up our KVMs using ansible configurations in the [config](src/continuous-x/ansible/inventory.yml), similar [configurations](src/continuous-x/ansible-baremetal/inventory.yml) for baremetal set-up also exist that include [ansible playbooks](src/continuous-x/ansible-baremetal/setup/bootstrap.yml) that clone the repo and install docker along with [mounting object storage](src/continuous-x/ansible-baremetal/setup/mount_object_storage.yml)
 
+Kubernetes is set up using kubespray and these [scripts](src/continuous-x/ansible/post_k8s/post_k8s_configure.yml)
 
-The ansible folder contains ansible configurations along with code to set up K8s on our provisioned VMs.
-Subfolders also include https://github.com/SimranKucheria/ECE-GY-9183-Machine-Learning-Systems-Engg-Operations-Project/blob/58d6a6d918183fc1195fe35efa6bde3f1ae06b96/src/continuous-x/ansible/post_k8s/set_up_block_storage.yml - that partitions and sets up block storage using ansible and rclone.
+Block storage is partitioned and made ready for use using an [ansible playbook](src/continuous-x/ansible/post_k8s/set_up_block_storage.yml)
 
-The ansible-baremetal folder contains ansible configurations for baremetal VMs,
-
+We also use the KVM nodes to run [ansible playbook data pipelines](src/continuous-x/ansible/pre_k8s/set_up_object_storage.yml) to load data into our object storage.
 
 - CI/CD and continuous training: 
-Workflows were set up on ArgoCD that trigger training, deploy the updated model to different environments and rebuild the argocd applications. A separate workflow was also written to promote models between environments.
+
+Argocd workflows to [trigger training](src/continuous-x/workflows/train-model.yaml), [refresh models](src/continuous-x/workflows/build-container-image.yaml), [deploy new environments](src/continuous-x/workflows/deploy-container-image.yaml) were also added, along with workflows to [promote models](src/continuous-x/workflows/promote-model.yaml).
+
+An asible playbook to run [online testing](src/continuous-x/ansible-baremetal/testing/online-data-testing.yml) was configured.
 
 <!-- You will define an automated pipeline that, in response to a trigger (which may be a manual trigger, a schedule, or an external condition, or some combination of these), will: re-train your model, run the complete offline evaluation suite, apply the post-training optimizations for serving, test its integration with the overall service, package it inside a container for the deployment environment, and deploy it to a staging area for further testing (e.g. load testing). -->
 
-- Staged deployment: Staging, Canary and Production Environments were defined for our K8s applications and model serving instances. All of these were exposed via different containers on different ports. Use a combination of K8s, MLFlow, Argo Workflows and Ansible. Pipeline were written to run online evaluation to conduct load testing.
+- Staged deployment: 
+
+The application is bought up and managed using argocd which creates [application images](src/continuous-x/argocd/workflow_build_init.yml) and [custom application images](src/continuous-x/argocd/initial_container_create.yml) using ansible playbooks.
+
+The baremetal instances have [inference servers/training containers](src/continuous-x/ansible-baremetal/setup/containers_bootstrap.yml) are set up for different environments using the following [yml](src/continuous-x/docker-environments/)
+
+The different enviroments on kubernetes are added using these [playbooks](src/continuous-x/argocd/)
