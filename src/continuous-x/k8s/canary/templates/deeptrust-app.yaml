@@ -27,12 +27,12 @@ spec:
               value: "http://{{.Values.fastapi.externalIP}}:{{.Values.vllm.port}}/v1/completions"    
             - name: TRITON_SERVER_URL
               value: "{{.Values.fastapi.externalIP}}:{{.Values.triton.port}}"
-            - name: MINIO_ACCESS_KEY
+            - name: MINIO_USER
               valueFrom:
                 secretKeyRef:
                   name: minio-credentials
                   key: accesskey
-            - name: MINIO_SECRET_KEY
+            - name: MINIO_PASSWORD
               valueFrom:
                 secretKeyRef:
                   name: minio-credentials
