@@ -346,19 +346,31 @@ We use a Triton Server to optimize inference server.
 optional "difficulty" points you are attempting. -->
 ##### Objectives
 
-- **Persistent storage**:
+- *Persistent storage*:
 We provisioned persistent storage on Chameleon with two main volumes: /mnt/block1 and /mnt/block2. On /mnt/block1, we store MLflow experiment artifacts (mlflow-artifacts), Ray distributed computing data (ray), and finalized production models and data (production). On /mnt/block2, we store the persistent PostgreSQL database (postgres) used for experiment tracking. This setup ensures all model artifacts, experiment logs, and production data are reliably saved and accessible throughout the project lifecycle.
 
-![Persistent Storage](images/Persistent%20Storage.jpeg)
+We Provision resources using terraform - Provisions Block Storage & Object Storage and the Loads the Data - 
+Setup Code: [Setup Code](src/continuous-x/set-up.ipynb)
 
-- **Offline data**: 
+<!-- Insert image here -->
+![Persistent Storage](images/Persistent%20Storage.png)
+
+- *Offline data*: 
 For offline data evaluation, we first verified the integrity of the AiVsHuman images by checking that all files were present, readable, and in the correct RGB format. Any missing or corrupted images were identified and logged. We then examined the class distributions after splitting the datasets to ensure that training, validation, and test sets were balanced and representative, printing summary statistics to confirm that the stratified sampling worked correctly.
 
 We also randomly inspected samples from both the AiVsHuman and Flickr30k datasets to confirm that labels and file paths were accurate. After combining the datasets into a classifier training set, we checked that the labels and image paths were correctly merged and shuffled. To guarantee reproducibility, we set fixed random seeds for all data splits so that results would be consistent across runs.
 
 Finally, we validated the final CSV files to ensure all file paths and labels were correct, with no duplicates or missing entries. This thorough evaluation confirmed that the processed datasets were clean, reliable, and ready for downstream tasks.
 
-- **Data pipelines**: 
+We setup the files via : Setup Code: [ Entire Setup Code](src/continuous-x/set-up.ipynb)
+Docker File: [ Docker for Offline Data for FLickr Dataset](src/data-persist/docker-blip-data-persist.yaml)
+Docker File: [ Docker for Offline Data for AiVSHuman Dataset](src/data-persist/docker-regnet-data-persist.yaml)
+Docker File: [ Docker for Offline Data for Entire Dataset](src/data-persist/docker-classifier-data-persist.yaml)
+Docker File: [ Docker file for Closed Loop Feedback](src/data-persist/Dockerfile)
+Python Script: [ Closed Loop Feedback](src/data-persist/offline-data.py)
+
+
+- *Data pipelines*: 
 Our data pipeline retrieves image data from the original sources, specifically the AI vs. Human and Flickr30k datasets. It automatically downloads and unpacks raw images and annotations from public repositories like Kaggle, preserving the original files in dedicated raw data storage for traceability and reproducibility.
 
 --Pre-processing Steps
@@ -373,19 +385,40 @@ All processed datasets and artifacts, including the train/validation splits and 
 --Continuous Feedback Loop
 For continuous improvement, user feedback and corrections collected in production are reviewed and, after human verification, incorporated back into the training data for future pipeline runs. This approach ensures that all data is validated, preprocessed, and split following best practices, with both original and processed data securely stored and versioned to support reliable and reproducible machine learning workflows.
 
-- **Online data**:
+We setup the files via : 
+Setup Code: [ Entire Setup Code](src/continuous-x/set-up.ipynb)
+Data Pipelines :[Entire Data Pipeline Code](src/data-persist)
+
+- *Online data*:
 For online (production) data, we implemented a containerized online data simulator that mimics real-world data flow to our deployed inference endpoints. The simulator automatically reads new data samples, such as images or captions, from the designated online test sets and sends them as HTTP requests to the appropriate model inference endpoints, including FastAPI, Triton Inference Server, or vLLM.
 
 Depending on the service, the simulator encodes each image or prepares a prompt, then sends it to the endpoint using the required API. It supports configurable load patterns to simulate varying levels of concurrent requests and realistic production traffic. Each request receives a prediction or generated output from the model, which is logged for monitoring and evaluation.
 
 This setup ensures that new data entering production is processed and evaluated in real time, closely mirroring actual usage scenarios. The modular design allows targeting different endpoints and models, supporting both image and language tasks. The results and logs from these online inference requests can be used for monitoring, accuracy checks, and feeding user feedback back into the pipeline for continuous improvement.
 
-- **Data Dashboars**:
+We setup the files via : 
+Setup Code: [ Entire Setup Code](src/continuous-x/set-up.ipynb)
+Python Script: [Online data simulator script for AiVsHuman Dataset ](src/data-persist/online_data_simulator_regnet.py)
+Python Script: [ Online data simulator script for FLickr Dataset](src/data-persist/online_data_simulator_blip.py)
+Python Script: [ Online data simulator script for FLickr Dataset Captions with vllm](src/data-persist/online_data_simulator_vllm.py)
+Docker File: [ Docker for Online Data for FLickr Dataset](src/data-persist/docker-online-data-simulator-blip.yaml)
+Docker File: [ Docker for Online Data for AiVsHuman Dataset](src/data-persist/docker-online-data-simulator-regnet.yaml)
+Docker File: [ Docker for Online Data for FLickr Dataset Captions with vllm](src/data-persist/docker-online-data-vllm.yaml)
+
+- *Data Dashboars*:
 We developed a Streamlit-based data dashboard to provide an interactive view of data quality and structure for both the AiVsHuman and Flickr30k datasets. Users can select any dataset and data split (such as train, validation, or test), and instantly see key metrics like the number of records, column names, missing values, and label distributions. The dashboard also allows users to browse random sample images with their associated labels or captions, making it easy to visually inspect data integrity.
 
 All data is loaded directly from the outputs of our ETL pipeline, so the dashboard always reflects the latest processed datasets. For example, a customer preparing to train a model can use the dashboard to check for class balance, spot missing values, and confirm that images are correctly matched with their labels or captions. This helps users quickly identify and address data quality issues before they impact downstream machine learning tasks.
 
 Overall, the dashboard provides actionable insights and transparency into the state of the data, supporting confident and informed decision-making throughout the ML workflow.
+
+We setup the files via : 
+Setup Code: [ Entire Setup Code](src/continuous-x/set-up.ipynb)
+Dashboard: [ Dashboard Data](src/data-persist/dashboard/app.py)
+Docker file: [  Docker compose file for setup of dashboard](src/data-persist/dashboard/docker-compose.yaml)
+Docker file: [ Docker file for setup of dashboard](src/serving/label_studio/Dockerfile)
+Requirements: [ Requirements file](src/serving/label_studio/requirements.txt)
+
 
 #### Continuous X
 
