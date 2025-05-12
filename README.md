@@ -288,14 +288,47 @@ and which optional "difficulty" points you are attempting. -->
 <!-- Make sure to clarify how you will satisfy the Unit 8 requirements,  and which 
 optional "difficulty" points you are attempting. -->
 ##### Objectives
-- Persistent storage: model training artifacts, test artifacts, models, container images, and data artifacts to be stored on provisioned persistent data storage.
 
-- Offline data: 80% of both the datasets outlined above will be used as offline data stored in the above provisioned data storage.
+- **Persistent storage**:
+We provisioned persistent storage on Chameleon with two main volumes: /mnt/block1 and /mnt/block2. On /mnt/block1, we store MLflow experiment artifacts (mlflow-artifacts), Ray distributed computing data (ray), and finalized production models and data (production). On /mnt/block2, we store the persistent PostgreSQL database (postgres) used for experiment tracking. This setup ensures all model artifacts, experiment logs, and production data are reliably saved and accessible throughout the project lifecycle.
 
-- Data pipelines: Our data pipeline will ingest image data from multiple data sources including our AI vs. Human dataset and MS COCO. The pipeline will also clean the data such that it is ready to use for model training. The original versions will be stored in the raw data storage. We'll also employ dataset versioning. We will perform data quality checks to validate incoming images for dimensions, and format compliance before entering the pipeline. For production feedback, we'll implement a closed-loop system where user reports and corrections are automatically fed back into our training datasets after human verification.
+![Persistent Storage](images/Persistent Storage.jpeg)
 
-- Online data: A script to simulate data consisting of images, some AI-generated, some real.
+- **Offline data**: 
+For offline data evaluation, we first verified the integrity of the AiVsHuman images by checking that all files were present, readable, and in the correct RGB format. Any missing or corrupted images were identified and logged. We then examined the class distributions after splitting the datasets to ensure that training, validation, and test sets were balanced and representative, printing summary statistics to confirm that the stratified sampling worked correctly.
 
+We also randomly inspected samples from both the AiVsHuman and Flickr30k datasets to confirm that labels and file paths were accurate. After combining the datasets into a classifier training set, we checked that the labels and image paths were correctly merged and shuffled. To guarantee reproducibility, we set fixed random seeds for all data splits so that results would be consistent across runs.
+
+Finally, we validated the final CSV files to ensure all file paths and labels were correct, with no duplicates or missing entries. This thorough evaluation confirmed that the processed datasets were clean, reliable, and ready for downstream tasks.
+
+- **Data pipelines**: 
+Our data pipeline retrieves image data from the original sources, specifically the AI vs. Human and Flickr30k datasets. It automatically downloads and unpacks raw images and annotations from public repositories like Kaggle, preserving the original files in dedicated raw data storage for traceability and reproducibility.
+
+--Pre-processing Steps
+The pipeline performs several preprocessing steps: it validates all images for correct format, dimensions, and integrity, excluding any corrupted or non-RGB images. It cleans and standardizes file paths, removes duplicates, and aligns metadata. Annotations and labels are reformatted into a consistent structure suitable for downstream tasks.
+
+--Dataset Splitting
+After cleaning, the data is merged and split into training, validation, and production (online) sets. The training set comprises 80% of the data and is used for model learning, while the validation set contains 20% for tuning and evaluation. A separate production set is held out for real-time evaluation and simulation. Stratified sampling is used to maintain class balance, and fixed random seeds ensure reproducibility. The splits are mutually exclusive to avoid data leakage.
+
+--Data Storage and Loading
+All processed datasets and artifacts, including the train/validation splits and the production set, are saved in persistent storage volumes on Chameleon. Additionally, the final datasets are uploaded to remote object storage to facilitate access by model training and inference services.
+
+--Continuous Feedback Loop
+For continuous improvement, user feedback and corrections collected in production are reviewed and, after human verification, incorporated back into the training data for future pipeline runs. This approach ensures that all data is validated, preprocessed, and split following best practices, with both original and processed data securely stored and versioned to support reliable and reproducible machine learning workflows.
+
+- **Online data**:
+For online (production) data, we implemented a containerized online data simulator that mimics real-world data flow to our deployed inference endpoints. The simulator automatically reads new data samples, such as images or captions, from the designated online test sets and sends them as HTTP requests to the appropriate model inference endpoints, including FastAPI, Triton Inference Server, or vLLM.
+
+Depending on the service, the simulator encodes each image or prepares a prompt, then sends it to the endpoint using the required API. It supports configurable load patterns to simulate varying levels of concurrent requests and realistic production traffic. Each request receives a prediction or generated output from the model, which is logged for monitoring and evaluation.
+
+This setup ensures that new data entering production is processed and evaluated in real time, closely mirroring actual usage scenarios. The modular design allows targeting different endpoints and models, supporting both image and language tasks. The results and logs from these online inference requests can be used for monitoring, accuracy checks, and feeding user feedback back into the pipeline for continuous improvement.
+
+- **Data Dashboars**:
+We developed a Streamlit-based data dashboard to provide an interactive view of data quality and structure for both the AiVsHuman and Flickr30k datasets. Users can select any dataset and data split (such as train, validation, or test), and instantly see key metrics like the number of records, column names, missing values, and label distributions. The dashboard also allows users to browse random sample images with their associated labels or captions, making it easy to visually inspect data integrity.
+
+All data is loaded directly from the outputs of our ETL pipeline, so the dashboard always reflects the latest processed datasets. For example, a customer preparing to train a model can use the dashboard to check for class balance, spot missing values, and confirm that images are correctly matched with their labels or captions. This helps users quickly identify and address data quality issues before they impact downstream machine learning tasks.
+
+Overall, the dashboard provides actionable insights and transparency into the state of the data, supporting confident and informed decision-making throughout the ML workflow.
 
 #### Continuous X
 
