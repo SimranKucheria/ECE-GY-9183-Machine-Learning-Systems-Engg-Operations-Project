@@ -52,10 +52,10 @@ Team Name:
 | Name            | Responsible for                       | Link to their commits in this repo |
 | --------------- | ------------------------------------- | ---------------------------------- |
 | Team AMPS!      |                                       |                                    |
-| Ansh Sarkar     | Model Training (Unit 4&5)             |                                    |
-| Manali Tanna    | Model Serving & Monitoring (Unit 6&7) |                                    |
-| Princy Doshi    | Data Pipeline (Unit 8)                |                                    |
-| Simran Kucheria | Continuous Pipeline (Unit 3)          |                                    |
+| Ansh Sarkar     | Model Training (Unit 4&5)             | https://github.com/SimranKucheria/ECE-GY-9183-Machine-Learning-Systems-Engg-Operations-Project/commits?author=anshsarkar                                    |
+| Manali Tanna    | Model Serving & Monitoring (Unit 6&7) | https://github.com/SimranKucheria/ECE-GY-9183-Machine-Learning-Systems-Engg-Operations-Project/commits?author=ManaliTanna                                    |
+| Princy Doshi    | Data Pipeline (Unit 8)                | https://github.com/SimranKucheria/ECE-GY-9183-Machine-Learning-Systems-Engg-Operations-Project/commits?author=princydd17                                    |
+| Simran Kucheria | Continuous Pipeline (Unit 3)          |https://github.com/SimranKucheria/ECE-GY-9183-Machine-Learning-Systems-Engg-Operations-Project/commits?author=SimranKucheria                                     |
 
 
 
@@ -91,10 +91,11 @@ The table below shows an example, it is not a recommendation. -->
 
 | Requirement                             | How many/when                                     | Justification |
 | --------------------------------------- | ------------------------------------------------- | ------------- |
-| `m1.medium` VMs                         | 3 for entire project duration                     | 1 for training/retraining purposes, 2 for serving inference(1 will host models(GPU) and the other will be used to expose the application)              |
-| `⁠gigaio-compute-07` or  `P3-GPU-009 ⁠`   | 4 hour block thrice a week                        | Training/Retraining LLM/RegNet            |
-| Floating IPs                            | 1 for entire project duration, 2 for sporadic use | Expose Production env, other 2 for canary/staging environments              |
-| Fast SSD(Persistent Storage)            | 512Gb Duration of entire project                   |Datasets are around ~40Gb (27+12) + Models are huge (8.29B parameters for LLM + 145M parameters for RegNet) ~ 18Gb |
+| `m1.medium` VMs                         | 3 for entire project duration                     | Used to expose the application using K8s           |
+| 2 Baremtals (1 with 2 GPUs, 1 with 1 liqid1 and liqid2)   | 6 hour block thrice a week   | Training/Retraining/Serving           |
+| Floating IPs  - 3 | 1 for K8s, 2 for Baremetals | Expose all instances          |
+| Fast SSD(Persistent Storage)            | 50Gb Duration of entire project  | Used for block storage|
+| Fast SSD(Object Storage)            | 100Gb Duration of entire project  | Used for object storage|
 
 ### Detailed design plan
 
@@ -198,13 +199,27 @@ optional "difficulty" points you are attempting. -->
 
 
 ##### Objectives
-- Infrastructure-as-code: The hardware requirements for our project will be provisioned using YAML and terraform. The software/service setup will be configured using ArgoCD and Argo workflows. All these configurations will live on git. 
+- Infrastructure-as-code: The hardware requirements for our project were provisioned using YAML and terraform. The software/service setup was configured using ArgoCD and Argo workflows and Ansible. 
 
-- Cloud-native: We will ensure immutability in our infrastructure by using IaC and as seen in our design diagram the RegNet and LLM's will be two separate microservices having separate API endpoints. All code will be containerized and run on docker/K8.
+- Cloud-native: All code was containerised by using docker compose files to pull up relevant code and start containers for them.
+![Architecture Diagram](images/Updated%20Architecture.png)
+
+The entrypoint to continuous-x provisioning starts in set-up.ipynb
+[https://github.com/SimranKucheria/ECE-GY-9183-Machine-Learning-Systems-Engg-Operations-Project/blob/58d6a6d918183fc1195fe35efa6bde3f1ae06b96/src/continuous-x/set-up.ipynb] 
+The notebook conatins all the commands to provision and set-up resources/run pipelines.
+
+We first use Terraform tp provision compute (Command in the provision-terraform.sh [https://github.com/SimranKucheria/ECE-GY-9183-Machine-Learning-Systems-Engg-Operations-Project/blob/58d6a6d918183fc1195fe35efa6bde3f1ae06b96/src/continuous-x/provision-terraform.sh]) 
+
+
+The ansible folder contains ansible configurations along with code to set up K8s on our provisioned VMs.
+Subfolders also include https://github.com/SimranKucheria/ECE-GY-9183-Machine-Learning-Systems-Engg-Operations-Project/blob/58d6a6d918183fc1195fe35efa6bde3f1ae06b96/src/continuous-x/ansible/post_k8s/set_up_block_storage.yml - that partitions and sets up block storage using ansible and rclone.
+
+The ansible-baremetal folder contains ansible configurations for baremetal VMs,
+
 
 - CI/CD and continuous training: 
-A CI/CD pipeline will be defined on Gitlab with configurations for all of the other pipelines. We will also incorporate our IAC configs here. The conditions for retraining will include - Changes in the data versioning, changes in model code and a weekly training schedule. This continuos X pipeline will go through all the defined pipelines - training, serving, evaluation, data automatically.
+Workflows were set up on ArgoCD that trigger training, deploy the updated model to different environments and rebuild the argocd applications. A separate workflow was also written to promote models between environments.
 
 <!-- You will define an automated pipeline that, in response to a trigger (which may be a manual trigger, a schedule, or an external condition, or some combination of these), will: re-train your model, run the complete offline evaluation suite, apply the post-training optimizations for serving, test its integration with the overall service, package it inside a container for the deployment environment, and deploy it to a staging area for further testing (e.g. load testing). -->
 
-- Staged deployment: We will configure “staging”, “canary”, and “production” environments on which our service may be deployed. We will use a combination of kubernetes, MLFlow, Argo Workflows and github actions for this. You will also implement a process by which a service is promoted from the staging area to a canary environment, for online evaluation, and a process by which a service is promoted from canary to production.
+- Staged deployment: Staging, Canary and Production Environments were defined for our K8s applications and model serving instances. All of these were exposed via different containers on different ports. Use a combination of K8s, MLFlow, Argo Workflows and Ansible. Pipeline were written to run online evaluation to conduct load testing.
