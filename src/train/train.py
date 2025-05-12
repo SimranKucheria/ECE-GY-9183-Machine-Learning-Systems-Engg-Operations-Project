@@ -25,15 +25,19 @@ logger = logging.get_logger(__name__)
 
 def train_model(args, config):
 
-    mlflow.start_run()       
-    mlflow.set_experiment('blip-captioning')
-    MODEL_NAME = config.get('mlflow_model_name', 'blip-captioning')
-    run_id = mlflow.active_run().info.run_id
-    mlflow.log_params(config)
-    args.result_dir = os.path.join(args.output_dir, 'result')
-    Path(args.output_dir).mkdir(parents=True, exist_ok=True)
-    Path(args.result_dir).mkdir(parents=True, exist_ok=True)
-    init_distributed_mode(args)    
+    init_distributed_mode(args)   
+    if is_main_process():
+        mlflow.end_run()
+
+        mlflow.start_run()       
+        mlflow.set_experiment('blip-captioning')
+        MODEL_NAME = config.get('mlflow_model_name', 'blip-captioning')
+        run_id = mlflow.active_run().info.run_id
+        mlflow.log_params(config)
+    
+    # args.result_dir = os.path.join(args.output_dir, 'result')
+    # Path(args.output_dir).mkdir(parents=True, exist_ok=True)
+    # Path(args.result_dir).mkdir(parents=True, exist_ok=True)
     device = torch.device(args.device)
 
     # fix the seed for reproducibility
@@ -138,22 +142,36 @@ def train_model(args, config):
         if args.evaluate: 
             break
         dist.barrier()
-    mlflow.log_artifact(
-        local_path=os.path.join(args.output_dir, 'model_base_caption_capfilt_large.pth'),
-        artifact_path="checkpoints"
-    #     registered_model_name= "blip-model",
-    #     pip_requirements=["torch", "transformers", "lightning"]
-    )
 
-    client = MlflowClient()
-    run_id = mlflow.active_run().info.run_id
-    model_uri = f"runs:/{run_id}/model"
-    registered_model = mlflow.register_model(model_uri=model_uri, name="blip-model")
-    client.set_registered_model_alias(
-        name = "blip-model",
-        alias = 'development',
-        version = registered_model.version,
-    )
+    if is_main_process():
+        mlflow.log_artifact(
+            local_path=os.path.join(args.output_dir, 'model_base_caption_capfilt_large.pth'),
+            artifact_path="checkpoints"
+        #     registered_model_name= "blip-model",
+        #     pip_requirements=["torch", "transformers", "lightning"]
+        )
+
+        client = MlflowClient()
+        run_id = mlflow.active_run().info.run_id
+        model_uri = f"runs:/{run_id}/model"
+        registered_model = mlflow.register_model(model_uri=model_uri, name="blip-model")
+        client.set_registered_model_alias(
+            name = "blip-model",
+            alias = 'development',
+            version = registered_model.version,
+        )
+
+        results = {
+            'model_uri': model_uri,
+            'new_model_version': run_id,
+            'mv': registered_model.version,
+            "status": "success",
+        }
+
+        with open("/mnt/data/results_blip.json", "w") as f:
+            json.dump(results, f)
+
+
 
     total_time = time.time() - start_time
     total_time_str = str(datetime.timedelta(seconds=int(total_time)))
@@ -164,27 +182,27 @@ def train_model(args, config):
         mlflow.end_run()
         print("MLflow run completed")
     
-    return run_id, registered_model.version
+    # return run_id, registered_model.version
 
-# if __name__ == '__main__':
-#     namespace = dict()
-#     namespace['output_dir'] = 'output/caption_flickr'
-#     namespace['device'] = 'cuda'
-#     namespace['seed'] = 42
-#     namespace['world_size'] = 1
-#     namespace['dist_url'] = 'env://'
-#     namespace['distributed'] = True
-#     namespace['evaluate'] = False
-#     namespace['config'] = 'config.yaml'
-#     args = argparse.Namespace(**namespace)
+if __name__ == '__main__':
+    namespace = dict()
+    namespace['output_dir'] = 'output/caption_flickr'
+    namespace['device'] = 'cuda'
+    namespace['seed'] = 42
+    namespace['world_size'] = 1
+    namespace['dist_url'] = 'env://'
+    namespace['distributed'] = True
+    namespace['evaluate'] = False
+    namespace['config'] = 'config.yaml'
+    args = argparse.Namespace(**namespace)
 
-#     config = yaml.load(open(args.config, 'r'), Loader=yaml.Loader)
+    config = yaml.load(open(args.config, 'r'), Loader=yaml.Loader)
 
-#     args.result_dir = os.path.join(args.output_dir, 'result')
+    args.result_dir = os.path.join(args.output_dir, 'result')
 
-#     Path(args.output_dir).mkdir(parents=True, exist_ok=True)
-#     Path(args.result_dir).mkdir(parents=True, exist_ok=True)
+    Path(args.output_dir).mkdir(parents=True, exist_ok=True)
+    Path(args.result_dir).mkdir(parents=True, exist_ok=True)
         
-#     yaml.dump(config, open(os.path.join(args.output_dir, 'config.yaml'), 'w'))    
+    yaml.dump(config, open(os.path.join(args.output_dir, 'config.yaml'), 'w'))    
 
-#     train_model(args, config)
+    train_model(args, config)
