@@ -324,7 +324,7 @@ We use a Triton Server to optimize inference server.
 
 - **Load test in staging**: We also do a load test for the services and display them on the grafana dashboard.
    
-- **Online evaluation in Canary**: We perform testing of our services and display it on the grafana service monitoring dashboard. [example](http://129.114.25.246:3000/d/bek0o5rctj8qoc/deeptrust-service-monitoring?orgId=1&from=now-5h&to=now-2h&timezone=browser&refresh=auto)
+- **Online evaluation in Canary**: We perform testing of our services and display it on the grafana service monitoring dashboard. [example](http://129.114.25.246:3000/d/bek0o5rctj8qoc/deeptrust-service-monitoring?orgId=1&from=now-5h&to=now-2h&timezone=browser&refresh=auto) [prediction monitoring](http://129.114.25.246:3000/d/2ad28855-6390-45f2-a96a-eb07c510d05e/deeptrust-prediction-monitoring?orgId=1&from=now-2d&to=now&timezone=browser&refresh=5s)
 
 - **Close the loop**: We also close the loop by by making the predictions available on label studio for users to give feedback on. This was tested locally and it worked but unfortunately not on the production environment.
 - Labelstudio [code](src/serving/label_studio)
@@ -337,7 +337,8 @@ We use a Triton Server to optimize inference server.
 - **Develop multiple options for serving**: The ViT, BLIP and LLM model benefit from using GPU. We ran experiments to record the inference times on both CPU and GPU. We also recorded the inference times on Triton. 
 - [resulting metrics](src/serving/Performance)
   
-- **Monitor for data drift**: We also monitor for data drift for images. The change detection model is trained. And detects drift everytime unexpected data like ghibli image is uploaded. [code](src/serving/data_drift.ipynb)
+- **Monitor for data drift**: We also monitor for data drift for images. The change detection model is trained. And detects drift everytime unexpected data like ghibli image is uploaded. [code](src/serving/data_drift.ipynb) [Dashboard](
+http://129.114.25.246:3000/d/82c57a6f-34d5-45e3-98fb-a7ffee9cdb53/deeptrust-drift-monitoring?orgId=1&from=now-2d&to=now&timezone=browser&refresh=10s) 
   
 - **Monitor for model degradation**: We will monitor for model degradation in the model output by closing the feedback loop. We will trigger automatic model re-training with the new image and its provided label.
 
