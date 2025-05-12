@@ -1,0 +1,10 @@
+services:
+  dashboard:
+    build: ./path-to-dashboard
+    image: project3-dashboard
+    ports:
+      - "8501:8501"
+    volumes:
+      - Project3Data:/data:ro
+    environment:
+      - TZ=UTC
