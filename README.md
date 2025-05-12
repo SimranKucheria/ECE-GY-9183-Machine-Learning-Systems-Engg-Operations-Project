@@ -264,7 +264,7 @@ and which optional "difficulty" points you are attempting. -->
          -  returns Tags (String of comma separated words)
   - Each output also has a little thumbs down button near it which uses the /flag endpoint in order to close the feedback loop.
 
-- **Serving from API endpoint**: The system is exposed through multiple API endpoints that serve each of the 3 models separately. Each service is a dockerized container that lives on CHI@TACC. To bring up the 3 services we can use [docker-compose-serve.yaml] (src/serving/docker-compose-serve.yaml). To test locally all services including frontend and monitoring we can use [docker-compose-eval-serve.yaml] (src/serving/docker-compose-eval-serve.yaml)
+- **Serving from API endpoint**: The system is exposed through multiple API endpoints that serve each of the 3 models separately. Each service is a dockerized container that lives on CHI@TACC. To bring up the 3 services we can use [docker-compose-serve.yaml](src/serving/docker-compose-serve.yaml). To test locally all services including frontend and monitoring we can use [docker-compose-eval-serve.yaml](src/serving/docker-compose-eval-serve.yaml)
   
   - ViT Model served using FastAPI
     - Code: [infernce_service](src/serving/inference_service)
@@ -311,23 +311,23 @@ We use a Triton Server to optimize inference server.
 
  For the LLM we use vLLM that takes advantage of PagedAttention, continuous batching, and tensor parallelism to reduce the latency of the model.
   
-- **System optimizations **: We can also convert our ViT model to a [ONNX model] (src/serving/convert_to_onnx.py) but we didnt get enough time to try that out.
+- **System optimizations **: We can also convert our ViT model to a [ONNX model](src/serving/convert_to_onnx.py) but we didnt get enough time to try that out.
 
 - **Offline evaluation of model**: Our system runs a pytest suite that can be included an automated offline evaluation plan after model training, with results logged to MLFlow. 
   
-  - code: [pytest] (src/serving/tests)
+  - code: [pytest](src/serving/tests)
 
   - Evaluation on appropriate domain specific metrics for each model. For AI VS Human Image detection using a ViT we use accuracy. For Image description we use BLEU scores.
-  - We use grad-cam to see what portions of the images is the model focussing on. [Experiment] (src/serving/experiments/RegNet_eval_offline.ipynb)
+  - We use grad-cam to see what portions of the images is the model focussing on. [Experiment](src/serving/experiments/RegNet_eval_offline.ipynb)
   - Test on known failure modes for ViT : We test the model on images that are known to be difficult such as AI-generated images mimicking artistic styles like Ghibli Images. 
-  - We also run template based test on the BLIP model to ensure the semantic meaning of the prediction doesnt change based on the addition of some words [code] (src/serving/tests/test_blip.py)
+  - We also run template based test on the BLIP model to ensure the semantic meaning of the prediction doesnt change based on the addition of some words [code](src/serving/tests/test_blip.py)
 
 - **Load test in staging**: We also do a load test for the services and display them on the grafana dashboard.
    
-- **Online evaluation in Canary**: We perform testing of our services and display it on the grafana service monitoring dashboard. [example] (http://129.114.25.246:3000/d/bek0o5rctj8qoc/deeptrust-service-monitoring?orgId=1&from=now-5h&to=now-2h&timezone=browser&refresh=auto)
+- **Online evaluation in Canary**: We perform testing of our services and display it on the grafana service monitoring dashboard. [example](http://129.114.25.246:3000/d/bek0o5rctj8qoc/deeptrust-service-monitoring?orgId=1&from=now-5h&to=now-2h&timezone=browser&refresh=auto)
 
 - **Close the loop**: We also close the loop by by making the predictions available on label studio for users to give feedback on. This was tested locally and it worked but unfortunately not on the production environment.
-- Labelstudio [code] (src/serving/label_studio)
+- Labelstudio [code](src/serving/label_studio)
 
 - **Business-specific evaluation**: The business specific evaluation for this system can be done in the following ways
     - A metric to evaluate the percentage of correctly tagged images with respect to AI-generated content.
@@ -335,9 +335,9 @@ We use a Triton Server to optimize inference server.
 
 ##### Extra Difficulty
 - **Develop multiple options for serving**: The ViT, BLIP and LLM model benefit from using GPU. We ran experiments to record the inference times on both CPU and GPU. We also recorded the inference times on Triton. 
-- [resulting metrics] (src/serving/Performance)
+- [resulting metrics](src/serving/Performance)
   
-- **Monitor for data drift**: We also monitor for data drift for images. The change detection model is trained. And detects drift everytime unexpected data like ghibli image is uploaded. [code] (src/serving/data_drift.ipynb)
+- **Monitor for data drift**: We also monitor for data drift for images. The change detection model is trained. And detects drift everytime unexpected data like ghibli image is uploaded. [code](src/serving/data_drift.ipynb)
   
 - **Monitor for model degradation**: We will monitor for model degradation in the model output by closing the feedback loop. We will trigger automatic model re-training with the new image and its provided label.
 
