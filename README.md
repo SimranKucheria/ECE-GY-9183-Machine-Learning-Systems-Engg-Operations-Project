@@ -311,7 +311,7 @@ We use a Triton Server to optimize inference server.
 
  For the LLM we use vLLM that takes advantage of PagedAttention, continuous batching, and tensor parallelism to reduce the latency of the model.
   
-- **System optimizations **: We can also convert our ViT model to a [ONNX model](src/serving/convert_to_onnx.py) but we didnt get enough time to try that out.
+- **System optimizations**: We can also convert our ViT model to a [ONNX model](src/serving/convert_to_onnx.py) but we didnt get enough time to try that out.
 
 - **Offline evaluation of model**: Our system runs a pytest suite that can be included an automated offline evaluation plan after model training, with results logged to MLFlow. 
   
